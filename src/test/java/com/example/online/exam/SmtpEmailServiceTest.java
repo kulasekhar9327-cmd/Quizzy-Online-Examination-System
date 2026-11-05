@@ -8,12 +8,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,10 +24,14 @@ class SmtpEmailServiceTest {
     @Mock
     private JavaMailSender mailSender;
 
+    @Mock
+    private ObjectProvider<JavaMailSender> mailSenderProvider;
+
     @Test
     void sendsPlainTextThroughConfiguredSender() {
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
         SmtpEmailService service = new SmtpEmailService(
-                mailSender, "smtp.example.test", "noreply@example.test");
+                mailSenderProvider, "smtp.example.test", "noreply@example.test");
 
         service.send(new EmailMessage(
                 "student@example.test",
@@ -50,6 +56,21 @@ class SmtpEmailServiceTest {
                 EmailDeliveryException.class,
                 () -> service.send(new EmailMessage(
                         "student@example.test", "Subject", "Body")));
+    }
+
+    @Test
+    void reportsMissingJavaMailSenderWithoutAttemptingDelivery() {
+        when(mailSenderProvider.getIfAvailable()).thenReturn(null);
+        SmtpEmailService service = new SmtpEmailService(
+                mailSenderProvider,
+                "smtp.example.test",
+                "noreply@example.test");
+
+        assertThrows(
+                EmailDeliveryException.class,
+                () -> service.send(new EmailMessage(
+                        "student@example.test", "Subject", "Body")));
+        org.mockito.Mockito.verifyNoInteractions(mailSender);
     }
 
     @Test

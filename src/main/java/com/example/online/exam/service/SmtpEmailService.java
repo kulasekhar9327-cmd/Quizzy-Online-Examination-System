@@ -1,6 +1,8 @@
 package com.example.online.exam.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,10 +15,21 @@ public class SmtpEmailService implements EmailService {
     private final String smtpHost;
     private final String fromAddress;
 
+    @Autowired
     public SmtpEmailService(
-            JavaMailSender mailSender,
+            ObjectProvider<JavaMailSender> mailSenderProvider,
             @Value("${spring.mail.host:}") String smtpHost,
             @Value("${quizzy.mail.from:}") String fromAddress) {
+        this(
+                mailSenderProvider.getIfAvailable(),
+                smtpHost,
+                fromAddress);
+    }
+
+    public SmtpEmailService(
+            JavaMailSender mailSender,
+            String smtpHost,
+            String fromAddress) {
         this.mailSender = mailSender;
         this.smtpHost = smtpHost;
         this.fromAddress = fromAddress;
@@ -25,7 +38,8 @@ public class SmtpEmailService implements EmailService {
     @Override
     public void send(EmailMessage message) {
         if (smtpHost == null || smtpHost.isBlank()
-                || fromAddress == null || fromAddress.isBlank()) {
+                || fromAddress == null || fromAddress.isBlank()
+                || mailSender == null) {
             throw new EmailDeliveryException(
                     "Email delivery is not configured.");
         }
