@@ -1,0 +1,10 @@
+target/
+data/
+**/*.mv.db
+**/*.trace.db
+.env
+.env.*
+**/application*.properties
+**/application*.yml
+**/application*.yaml
+.git/
