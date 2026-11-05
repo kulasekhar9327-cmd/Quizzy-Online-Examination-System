@@ -19,21 +19,24 @@ public class ExamSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "exam_name")
     private String examName;
 
     private String subject;
 
+    @Column(name = "exam_date")
     private LocalDate examDate;
 
+    @Column(name = "exam_time")
     private LocalTime examTime;
 
     @Column(length = 2000)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "duration_minutes", nullable = false)
     private Integer durationMinutes = 30;
 
-    @Column(nullable = false)
+    @Column(name = "total_marks", nullable = false)
     private Integer totalMarks = 25;
 
     public ExamSchedule() {

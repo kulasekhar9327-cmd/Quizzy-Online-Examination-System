@@ -12,7 +12,7 @@ public class ExamResult {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "student_id", nullable = false)
     private Long studentId;
 
     @Column(nullable = false)
@@ -21,27 +21,27 @@ public class ExamResult {
     @Column(nullable = false)
     private int score;
 
-    @Column(nullable = false)
+    @Column(name = "total_questions", nullable = false)
     private int totalQuestions;
 
     @Column(nullable = false)
     private int percentage;
 
-    @Column(nullable = false)
+    @Column(name = "exam_date", nullable = false)
     private LocalDateTime examDate;
 
     // Timing fields; nullable for existing records.
-    @Column(nullable = true)
+    @Column(name = "start_time", nullable = true)
     private LocalDateTime startTime;
 
-    @Column(nullable = true)
+    @Column(name = "completion_time", nullable = true)
     private LocalDateTime completionTime;
 
-    @Column(nullable = true)
+    @Column(name = "duration_seconds", nullable = true)
     private Long durationSeconds;
 
     // Null or false means the result is not yet published.
-    // Nullable keeps existing database rows compatible during migration.
+    // Nullable keeps existing database rows compatible.
     @Column(nullable = true)
     private Boolean published = false;
 
