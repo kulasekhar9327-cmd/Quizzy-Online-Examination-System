@@ -1,0 +1,417 @@
+
+:root {
+    --primary: #2457a7;
+    --primary-strong: #1b448d;
+    --primary-soft: rgba(36, 87, 167, 0.12);
+    --secondary: #0f9d91;
+    --secondary-soft: rgba(15, 157, 145, 0.12);
+    --background: #f4f7fb;
+    --background-strong: #edf4ff;
+    --surface: #ffffff;
+    --surface-strong: #f8fbff;
+    --surface-soft: #f3f8ff;
+    --text: #263449;
+    --text-soft: #4f5e76;
+    --muted: #718096;
+    --border: #e3e9f1;
+    --success: #218653;
+    --warning: #e99a36;
+    --danger: #d94b4b;
+    --gold: #d6a64f;
+    --shadow: 0 16px 34px rgba(23, 43, 77, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Inter, Arial, sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(36, 87, 167, 0.08), transparent 24rem),
+        radial-gradient(circle at top right, rgba(15, 157, 145, 0.08), transparent 20rem),
+        var(--background);
+    color: var(--text);
+}
+
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+    background: transparent;
+}
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    width: 270px;
+    min-width: 270px;
+    height: 100vh;
+    padding: 28px 18px;
+    background: rgba(255, 255, 255, 0.9);
+    border-right: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    box-shadow: inset -1px 0 0 rgba(36, 87, 167, 0.04);
+}
+
+.brand {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 900;
+    letter-spacing: -0.06em;
+    margin: 0 0 30px;
+    color: var(--text);
+}
+
+.brand::after {
+    content: ".";
+    color: var(--primary);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 13px 14px;
+    margin: 8px 0;
+    color: var(--text-soft);
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(36, 87, 167, 0.08), rgba(15, 157, 145, 0.08));
+    border-color: rgba(36, 87, 167, 0.12);
+    transform: translateX(2px);
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    padding: 32px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding: 8px 2px;
+}
+
+.topbar h1 {
+    margin: 0 0 8px;
+    font-size: clamp(2rem, 3vw, 2.7rem);
+    letter-spacing: -0.05em;
+}
+
+.topbar h1 + .muted {
+    font-size: 0.95rem;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.welcome {
+    margin-bottom: 24px;
+    padding: 28px 28px 26px;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(36, 87, 167, 0.12), rgba(15, 157, 145, 0.08), rgba(255,255,255,0.8));
+    box-shadow: var(--shadow);
+}
+
+.welcome h2 {
+    margin: 0 0 10px;
+    font-size: clamp(1.7rem, 2vw, 2.5rem);
+    letter-spacing: -0.05em;
+}
+
+.welcome p {
+    margin: 0 0 18px;
+    color: rgba(255,255,255,0.9);
+    max-width: 52ch;
+    line-height: 1.6;
+}
+
+.stats,
+.exam-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.card {
+    background: linear-gradient(180deg, var(--surface), var(--surface-strong));
+    border: 1px solid var(--border);
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+}
+
+.card .muted,
+.card p {
+    color: var(--muted);
+}
+
+.stat-number {
+    display: block;
+    margin-top: 12px;
+    font-size: clamp(2rem, 2.5vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    color: var(--text);
+}
+
+.exam-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 254px;
+}
+
+.exam-icon {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(36, 87, 167, 0.12), rgba(15, 157, 145, 0.08));
+    border: 1px solid rgba(36, 87, 167, 0.12);
+    border-radius: 16px;
+    font-size: 1.7rem;
+}
+
+.exam-card h3 {
+    margin: 4px 0 0;
+    font-size: 1.35rem;
+    letter-spacing: -0.04em;
+}
+
+.exam-card p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-soft);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
+    padding: 11px 18px;
+    background: linear-gradient(135deg, var(--primary), #346cbb);
+    color: white;
+    text-decoration: none;
+    border: 0;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    box-shadow: 0 12px 20px rgba(36, 87, 167, 0.18);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+}
+
+.section-title {
+    margin: 18px 0 14px;
+    font-size: clamp(1.4rem, 2vw, 1.9rem);
+    letter-spacing: -0.05em;
+}
+
+.quizzy-logout-form {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 30 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+}
+
+.quizzy-logout-button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: linear-gradient(135deg, #d94b4b, #c93d3d) !important;
+    color: #fff !important;
+    border: 1px solid rgba(217, 75, 75, 0.15) !important;
+    border-radius: 12px !important;
+    padding: 11px 18px !important;
+    min-height: 44px;
+    font-size: 0.96rem !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    box-shadow: 0 10px 18px rgba(217, 75, 75, 0.18);
+}
+
+.quizzy-logout-button:hover {
+    filter: brightness(1.08);
+}
+
+.upcoming-exam {
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(8, 14, 28, 0.3);
+    overflow-wrap: anywhere;
+}
+
+.upcoming-exam h4 {
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+}
+
+.upcoming-exam p {
+    margin: 8px 0;
+    color: var(--text-soft);
+}
+
+.upcoming-exam .exam-description {
+    margin-top: 12px;
+}
+
+.upcoming-empty {
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+}
+
+.history-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-soft);
+}
+
+.history-table th {
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+}
+
+.scheduled-start-form {
+    margin-top: 16px;
+}
+
+.scheduled-start-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), #346cbb);
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(36,87,167,0.16);
+}
+
+.pending-result {
+    color: var(--warning);
+    font-weight: 700;
+}
+
+.published-result {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(36, 87, 167, 0.08);
+    border: 1px solid rgba(36, 87, 167, 0.12);
+    color: var(--primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+@media (max-width: 980px) {
+    .sidebar {
+        width: 220px;
+        min-width: 220px;
+    }
+
+    .stats,
+    .exam-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .main {
+        padding: 22px;
+    }
+}
+
+@media (max-width: 680px) {
+    .dashboard {
+        display: block;
+    }
+
+    .sidebar {
+        position: static;
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+        padding: 16px 16px 8px;
+    }
+
+    .brand {
+        margin-bottom: 12px;
+    }
+
+    .main {
+        padding: 16px;
+    }
+
+    .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .stats,
+    .exam-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quizzy-logout-form {
+        top: 12px !important;
+        right: 12px !important;
+    }
+
+    .quizzy-logout-button {
+        padding: 10px 16px !important;
+        font-size: 0.84rem !important;
+    }
+}
+

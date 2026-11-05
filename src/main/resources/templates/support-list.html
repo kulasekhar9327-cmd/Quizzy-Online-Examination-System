@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Student Support</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+</head>
+<body>
+<main class="support-page">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Quizzy support</p>
+            <h1>Your conversations</h1>
+            <p class="muted">Ask for help and follow replies from the support team.</p>
+        </div>
+        <nav class="support-actions" aria-label="Student support navigation">
+            <a class="support-button secondary" th:href="@{/dashboard}">Dashboard</a>
+            <a class="support-button" th:href="@{/support/new}">New conversation</a>
+        </nav>
+    </header>
+
+    <section class="support-card empty-state"
+             th:if="${conversations == null or #lists.isEmpty(conversations)}">
+        <h2>No support conversations yet</h2>
+        <p>Start a conversation if you need help with your account, an exam, or Quizzy.</p>
+        <a class="support-button" th:href="@{/support/new}">Contact support</a>
+    </section>
+
+    <section class="conversation-list" aria-label="Your support conversations"
+             th:if="${conversations != null and !#lists.isEmpty(conversations)}">
+        <article class="support-card conversation-row" th:each="entry : ${conversations}">
+            <div class="conversation-main">
+                <h2>
+                    <a th:href="@{/support/{id}(id=${entry.id})}"
+                       th:text="${entry.subject}">Conversation subject</a>
+                </h2>
+                <p class="conversation-meta">
+                    <span th:text="${#strings.replace(entry.category.name(), '_', ' ')}">Category</span>
+                    <span aria-hidden="true">·</span>
+                    <span th:text="${#strings.replace(entry.status.name(), '_', ' ')}">Status</span>
+                </p>
+                <p class="muted">
+                    Last activity:
+                    <time th:text="${#temporals.format(entry.lastMessageAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                </p>
+            </div>
+            <span class="badge unread" th:if="${entry.hasUnreadMessages}">New admin reply</span>
+            <a class="support-button secondary"
+               th:href="@{/support/{id}(id=${entry.id})}">Open</a>
+        </article>
+    </section>
+</main>
+</body>
+</html>

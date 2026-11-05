@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Scheduled Exam Questions</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #f4f7fb;
+            color: #263449;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            margin-bottom: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 14px #0000000d;
+        }
+
+        h1, h2 {
+            color: #172b4d;
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button, .link {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 0;
+            border-radius: 6px;
+            color: white;
+            background: #2457a7;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete {
+            background: #dc2626;
+        }
+
+        .edit {
+            background: #0f766e;
+        }
+
+        .back {
+            background: #475569;
+        }
+
+        .success {
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 6px;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error {
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 6px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .question {
+            padding: 16px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .question:last-child {
+            border-bottom: 0;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main>
+
+    <p>
+        <a th:href="@{/admin/schedules}" class="link back">
+            Back to Scheduled Exams
+        </a>
+    </p>
+
+    <section class="card">
+        <h1>Manage Exam Questions</h1>
+
+        <p>
+            <strong>Exam:</strong>
+            <span th:text="${exam.examName}"></span>
+        </p>
+
+        <p>
+            <strong>Subject:</strong>
+            <span th:text="${exam.subject}"></span>
+        </p>
+
+        <p>
+            <strong>Date:</strong>
+            <span th:text="${exam.examDate}"></span>
+        </p>
+
+        <p>
+            <strong>Time:</strong>
+            <span th:text="${#temporals.format(exam.examTime, 'HH:mm')}"></span>
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>Add a Question</h2>
+
+        <div class="success"
+             th:if="${success}"
+             th:text="${success}"></div>
+
+        <div class="error"
+             th:if="${error}"
+             th:text="${error}"></div>
+
+        <form th:action="@{/admin/schedules/{id}/questions(id=${exam.id})}"
+              method="post">
+
+            <label for="questionText">Question</label>
+            <textarea id="questionText"
+                      name="questionText"
+                      rows="3"
+                      maxlength="1000"
+                      required></textarea>
+
+            <div class="options">
+                <div>
+                    <label for="optionA">Option A</label>
+                    <input id="optionA" name="optionA"
+                           maxlength="300" required>
+                </div>
+
+                <div>
+                    <label for="optionB">Option B</label>
+                    <input id="optionB" name="optionB"
+                           maxlength="300" required>
+                </div>
+
+                <div>
+                    <label for="optionC">Option C</label>
+                    <input id="optionC" name="optionC"
+                           maxlength="300" required>
+                </div>
+
+                <div>
+                    <label for="optionD">Option D</label>
+                    <input id="optionD" name="optionD"
+                           maxlength="300" required>
+                </div>
+            </div>
+
+            <label for="correctAnswer">Correct Answer</label>
+            <select id="correctAnswer" name="correctAnswer" required>
+                <option value="">Select correct answer</option>
+                <option value="A">Option A</option>
+                <option value="B">Option B</option>
+                <option value="C">Option C</option>
+                <option value="D">Option D</option>
+            </select>
+
+            <p>
+                <button type="submit">Save Question</button>
+            </p>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Questions for This Exam</h2>
+
+        <p th:if="${#lists.isEmpty(questions)}">
+            No questions have been added to this exam yet.
+        </p>
+
+        <div th:each="q, stat : ${questions}" class="question">
+
+            <h3>
+                <span th:text="${stat.count}"></span>.
+                <span th:text="${q.questionText}"></span>
+            </h3>
+
+            <p>
+                A. <span th:text="${q.optionA}"></span>
+            </p>
+
+            <p>
+                B. <span th:text="${q.optionB}"></span>
+            </p>
+
+            <p>
+                C. <span th:text="${q.optionC}"></span>
+            </p>
+
+            <p>
+                D. <span th:text="${q.optionD}"></span>
+            </p>
+
+            <p>
+                <strong>Correct answer:</strong>
+                <span th:text="${q.correctAnswer}"></span>
+            </p>
+
+            <div class="question-actions">
+
+                <!-- Edit Question button -->
+                <a th:href="@{/admin/schedules/{scheduleId}/questions/{questionId}/edit(
+                            scheduleId=${exam.id}, questionId=${q.id})}"
+                   class="link edit">
+                    Edit Question
+                </a>
+
+                <!-- Delete Question button -->
+                <form th:action="@{/admin/schedules/{scheduleId}/questions/{questionId}/delete(
+                            scheduleId=${exam.id}, questionId=${q.id})}"
+                      method="post"
+                      onsubmit="return confirm('Are you sure you want to delete this question?');">
+
+                    <button type="submit" class="delete">
+                        Delete Question
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

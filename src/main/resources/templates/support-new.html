@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | New Support Conversation</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+</head>
+<body>
+<main class="support-page narrow">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Quizzy support</p>
+            <h1>Start a conversation</h1>
+            <p class="muted">Share the issue and the support team will respond here.</p>
+        </div>
+        <a class="support-button secondary" th:href="@{/support}">Back to conversations</a>
+    </header>
+
+    <p class="notice error" th:if="${error}" th:text="${error}" role="alert"></p>
+
+    <form class="support-card support-form" th:action="@{/support}" method="post">
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+            <option value="">Choose a category</option>
+            <option value="ACCOUNT_LOGIN">Account and Login</option>
+            <option value="EXAM_PROBLEMS">Exam Problems</option>
+            <option value="TIMER_SUBMISSION">Timer and Submission</option>
+            <option value="RESULTS_MARKS">Results and Marks</option>
+            <option value="FEEDBACK">Feedback</option>
+            <option value="TECHNICAL_PROBLEMS">Technical Problems</option>
+            <option value="OTHER">Other</option>
+        </select>
+
+        <label for="subject">Subject</label>
+        <input id="subject" name="subject" type="text"
+               maxlength="150" required autocomplete="off">
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="7"
+                  maxlength="4000" required></textarea>
+
+        <div class="support-actions">
+            <button class="support-button" type="submit">Send to support</button>
+            <a class="support-button secondary" th:href="@{/support}">Cancel</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Quizzy - Scheduled Exam</title>
+    <link rel="stylesheet" th:href="@{/css/exam-monitoring.css}">
+    <link rel="stylesheet" th:href="@{/css/exam-experience.css}">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4ff;
+            margin: 0;
+            padding: 30px 15px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+        }
+
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fef08a;
+        }
+
+        .question {
+            background: white;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .option {
+            display: block;
+            padding: 10px;
+            margin-top: 8px;
+            background: #f8fafc;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            background: #dbeafe;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+<main class="container exam-mode" data-exam-mode>
+
+    <form id="scheduledQuizForm"
+          data-exam-form
+          hidden
+          th:action="@{/scheduled-exams/{id}/submit(id=${examId})}"
+          method="post"
+          th:if="${!questions.isEmpty()}">
+        <input type="hidden" name="attemptId" th:value="${attemptId}">
+
+        <div class="question exam-question-card" data-exam-question
+             th:each="question, stat : ${questions}">
+            <div class="exam-question-content" data-exam-content>
+                <h2>
+                    <span th:text="${stat.count}">1</span>.
+                    <span th:text="${question.text}">Question text</span>
+                </h2>
+                <label class="option exam-option"
+                   th:each="option, optStat : ${question.options}">
+                    <input type="radio"
+                           th:name="'q' + ${stat.index}"
+                           th:value="${optStat.index}">
+                    <span th:text="${option}">Answer option</span>
+                </label>
+            </div>
+        </div>
+        <div class="exam-question-controls">
+            <button class="exam-step-button" type="button" data-question-previous>Previous</button>
+            <button class="exam-step-button" type="button" data-question-next>Next</button>
+            <button class="exam-submit-button" type="submit">Submit Examination</button>
+        </div>
+    </form>
+
+    <section class="exam-preface" data-exam-preface aria-labelledby="preface-title"
+             th:if="${!questions.isEmpty()}">
+        <h1 id="preface-title" th:text="${examName}">Scheduled Exam</h1>
+        <p th:text="${subject != null ? subject : 'Scheduled examination'}">Scheduled examination</p>
+        <div class="exam-summary" aria-label="Examination details">
+            <div><strong>Total questions</strong><span th:text="${questions.size()}">0</span></div>
+            <div><strong>Total marks</strong><span th:text="${totalMarks != null ? totalMarks : 'Not specified'}">Not specified</span></div>
+            <div><strong>Duration</strong><span th:text="${durationMinutes != null ? durationMinutes + ' minutes' : 'See countdown'}">See countdown</span></div>
+        </div>
+        <section class="exam-rules" aria-labelledby="exam-rules-title">
+            <h2 id="exam-rules-title">Important instructions and rules</h2>
+            <ul>
+                <li>Choose one answer for each question.</li>
+                <li>Submit your answers before the timer expires.</li>
+                <li>Scheduled examination availability is enforced by the server.</li>
+            </ul>
+            <p th:if="${examDescription != null and !#strings.isEmpty(examDescription)}"
+               th:text="${examDescription}"></p>
+        </section>
+        <div th:replace="~{fragments/exam-security-panel :: panel}"></div>
+        <p class="exam-entry-message" data-exam-entry-message role="alert" aria-live="assertive"></p>
+        <div class="exam-preface-actions">
+            <button class="exam-continue-button" type="button" data-exam-continue hidden>
+                Continue without fullscreen
+            </button>
+            <a class="btn" th:href="@{/dashboard}">Back to Dashboard</a>
+        </div>
+    </section>
+
+    <section class="exam-workspace" data-exam-workspace hidden
+             th:if="${!questions.isEmpty()}" aria-label="Examination workspace">
+        <header class="exam-workspace-header">
+            <div>
+                <h1 class="exam-workspace-title" th:text="${examName}">Scheduled Exam</h1>
+                <p class="exam-workspace-subtitle"
+                   th:text="${subject != null ? subject : 'Scheduled examination'}">
+                    Scheduled examination
+                </p>
+            </div>
+            <div class="exam-workspace-metrics">
+                <p class="timer">Time left:
+                    <span id="timer" th:text="${duration}">60</span> seconds
+                </p>
+                <div data-exam-security-slot></div>
+            </div>
+        </header>
+        <p class="exam-entry-message" data-workspace-entry-message
+           role="status" hidden></p>
+        <div class="exam-progress-wrap">
+            <span>Question <strong data-current-question>1</strong> of
+                <strong data-question-count th:text="${questions.size()}">0</strong>
+            </span>
+            <span class="exam-progress-track">
+                <span class="exam-progress-bar" data-exam-progress role="progressbar"
+                      aria-label="Question progress" aria-valuemin="1" aria-valuenow="1"
+                      th:aria-valuemax="${questions.size()}"></span>
+            </span>
+        </div>
+        <nav class="exam-question-nav" data-question-navigation
+             aria-label="Question navigation"></nav>
+    </section>
+
+    <p th:if="${questions.isEmpty()}">
+        No questions are available for this exam.
+    </p>
+</main>
+
+<script th:inline="javascript">
+    let timeLeft = Number(/*[[${duration}]]*/ 60);
+    const timerDisplay = document.getElementById("timer");
+    const examForm = document.getElementById("scheduledQuizForm");
+
+    let submitted = false;
+    let countdown = null;
+
+    function submitExam() {
+        if (submitted || !examForm) {
+            return;
+        }
+
+        window.addEventListener("quizzy:attempt-disqualified", function () {
+            submitted = true;
+            if (countdown !== null) {
+                clearInterval(countdown);
+                countdown = null;
+            }
+            if (timerDisplay) {
+                timerDisplay.textContent = "Disqualified";
+            }
+        });
+
+        submitted = true;
+
+        if (countdown !== null) {
+            clearInterval(countdown);
+        }
+
+        examForm.querySelector('button[type="submit"]').disabled = true;
+        examForm.querySelector('button[type="submit"]').textContent =
+            "Submitting...";
+
+        examForm.requestSubmit();
+    }
+
+    if (examForm) {
+        if (timeLeft <= 0) {
+            submitExam();
+        } else {
+            countdown = setInterval(function () {
+                timeLeft = Math.max(0, timeLeft - 1);
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        examForm.addEventListener("submit", function (event) {
+            if (submitted) {
+                return;
+            }
+
+            submitted = true;
+
+            if (countdown !== null) {
+                clearInterval(countdown);
+            }
+
+            examForm.querySelector('button[type="submit"]').disabled = true;
+            examForm.querySelector('button[type="submit"]').textContent =
+                "Submitting...";
+        });
+    }
+</script>
+<script th:src="@{/js/exam-monitoring.js}" defer></script>
+<script th:src="@{/js/exam-experience.js}" defer></script>
+
+</body>
+</html>

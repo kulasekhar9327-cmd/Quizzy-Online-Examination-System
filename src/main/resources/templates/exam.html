@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+    <title th:text="${examTitle != null ? examTitle + ' | Quizzy' : 'Quizzy | Exam'}">
+        Quizzy | Exam
+    </title>
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/exam-monitoring.css}">
+    <link rel="stylesheet" th:href="@{/css/exam-experience.css}">
+
+    <style>
+        .exam-container {
+            width: 100%;
+            max-width: 850px;
+            margin: 20px auto;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .question-card {
+            background: white;
+            border: 1px solid #e3e5f2;
+            border-radius: 14px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .option {
+            display: block;
+            padding: 12px;
+            margin: 10px 0;
+            background: #f6f7ff;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            background: #e9eaff;
+        }
+
+        .option input {
+            margin-right: 10px;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #5b55e7;
+        }
+
+        .timer.warning {
+            color: #dc2626;
+        }
+
+        .empty-message {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            .exam-container {
+                margin: 10px auto;
+                padding: 14px;
+            }
+
+            .question-card {
+                padding: 14px;
+            }
+
+            .timer {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="exam-container exam-mode" data-exam-mode>
+
+    <div th:if="${questions != null and !questions.isEmpty()}">
+
+        <section class="exam-preface" data-exam-preface aria-labelledby="preface-title">
+            <h1 id="preface-title"
+                th:text="${examTitle != null ? examTitle : 'Examination'}">
+                Examination
+            </h1>
+            <p th:text="${subject != null ? #strings.capitalize(subject) : 'Subject examination'}">
+                Subject examination
+            </p>
+
+            <div class="exam-summary" aria-label="Examination details">
+                <div>
+                    <strong>Total questions</strong>
+                    <span th:text="${questions.size()}">0</span>
+                </div>
+                <div>
+                    <strong>Total marks</strong>
+                    <span th:text="${questions.size()}">0</span>
+                </div>
+                <div>
+                    <strong>Duration</strong>
+                    <span th:text="${durationMinutes != null ? durationMinutes + ' minutes' : 'See countdown'}">See countdown</span>
+                </div>
+            </div>
+
+            <section class="exam-rules" aria-labelledby="exam-instructions-title">
+                <h2 id="exam-instructions-title">Important exam instructions</h2>
+                <ul>
+                    <li>Each question carries 1 mark; there is no negative marking.</li>
+                    <li>You will receive 2 minutes per question.</li>
+                    <li>Your exam timer starts when you start the exam.</li>
+                    <li>Choose one answer for each question.</li>
+                    <li>Submit your answers before the timer expires.</li>
+                    <li>Tab switches and loss of focus may show a browser warning.</li>
+                    <li>Copy, cut, and paste actions may show a warning; ordinary text selection is not monitored.</li>
+                    <li>Fullscreen is unavailable in some browsers.</li>
+                    <li>The server confirms monitoring alerts and applies the existing warning policy.</li>
+                </ul>
+            </section>
+
+            <div th:replace="~{fragments/exam-security-panel :: panel}"></div>
+
+            <p class="exam-entry-message" data-exam-entry-message role="alert" aria-live="assertive"></p>
+            <div class="exam-preface-actions">
+                <button class="exam-continue-button" type="button" data-exam-continue hidden>
+                    Continue without fullscreen
+                </button>
+                <a class="btn" th:href="@{/dashboard}">Back to Dashboard</a>
+            </div>
+        </section>
+
+        <section class="exam-workspace" data-exam-workspace hidden
+                 aria-label="Examination workspace">
+            <header class="exam-workspace-header">
+                <div>
+                    <h1 class="exam-workspace-title"
+                        th:text="${examTitle != null ? examTitle : 'Examination'}">
+                        Examination
+                    </h1>
+                    <p class="exam-workspace-subtitle"
+                       th:text="${subject != null ? #strings.capitalize(subject) : 'Subject examination'}">
+                        Subject examination
+                    </p>
+                </div>
+                <div class="exam-workspace-metrics">
+                    <p class="timer">
+                        Time remaining:
+                        <span id="timer"
+                              th:data-remaining-seconds="${duration}"
+                              aria-live="off">00:00</span>
+                    </p>
+                    <div data-exam-security-slot></div>
+                </div>
+            </header>
+            <p class="exam-entry-message" data-workspace-entry-message
+               role="status" hidden></p>
+
+            <div class="exam-progress-wrap">
+                <span>Question <strong data-current-question>1</strong> of
+                    <strong data-question-count th:text="${questions.size()}">0</strong>
+                </span>
+                <span class="exam-progress-track">
+                    <span class="exam-progress-bar" data-exam-progress
+                          role="progressbar" aria-label="Question progress"
+                          aria-valuemin="1" aria-valuenow="1"
+                          th:aria-valuemax="${questions.size()}"></span>
+                </span>
+            </div>
+            <nav class="exam-question-nav" data-question-navigation
+                 aria-label="Question navigation"></nav>
+
+        <form id="examForm"
+              data-exam-form
+              th:action="@{/exams/submit}"
+              method="post">
+
+            <input type="hidden"
+                   name="subject"
+                   th:value="${subject}">
+
+            <input type="hidden"
+                   name="attemptId"
+                   th:value="${attemptId}">
+
+            <div th:each="question, stat : ${questions}"
+                 class="question-card exam-question-card"
+                 data-exam-question>
+
+                <div class="exam-question-content" data-exam-content>
+                <h2>
+                    <span th:text="${stat.count}">1</span>.
+                    <span th:text="${question.text}">Question text</span>
+                </h2>
+
+                <label class="option"
+                       th:classappend="exam-option"
+                       th:each="option, optStat : ${question.options}">
+
+                    <input type="radio"
+                           th:name="${'q' + stat.index}"
+                           th:value="${optStat.index}">
+
+                    <span th:text="${option}">Option</span>
+                </label>
+                </div>
+
+            </div>
+
+            <div class="exam-question-controls">
+                <button class="exam-step-button" type="button"
+                        data-question-previous>Previous</button>
+                <button class="exam-step-button" type="button"
+                        data-question-next>Next</button>
+                <button class="exam-submit-button" id="submitButton" type="submit">
+                    Submit Examination
+                </button>
+            </div>
+
+        </form>
+        </section>
+
+        <script>
+            (function () {
+                "use strict";
+
+                const timerDisplay = document.getElementById("timer");
+                const examForm = document.getElementById("examForm");
+                const submitButton = document.getElementById("submitButton");
+
+                if (!timerDisplay || !examForm || !submitButton) {
+                    return;
+                }
+
+                const parsedDuration = Number(
+                    timerDisplay.dataset.remainingSeconds
+                );
+
+                let remaining = Number.isFinite(parsedDuration)
+                    ? Math.max(0, Math.floor(parsedDuration))
+                    : 0;
+
+                let submitted = false;
+                let timerInterval = null;
+
+                function updateTimerDisplay() {
+                    const minutes = Math.floor(remaining / 60);
+                    const seconds = remaining % 60;
+
+                    timerDisplay.textContent =
+                        String(minutes).padStart(2, "0") + ":" +
+                        String(seconds).padStart(2, "0");
+
+                    timerDisplay.classList.toggle("warning", remaining <= 60);
+                }
+
+                function stopTimer() {
+                    if (timerInterval !== null) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                }
+
+                window.addEventListener(
+                    "quizzy:attempt-disqualified",
+                    function () {
+                        stopTimer();
+                        timerDisplay.textContent = "Disqualified";
+                    }
+                );
+
+                function submitExamAutomatically() {
+                    if (submitted) {
+                        return;
+                    }
+
+                    submitted = true;
+                    stopTimer();
+
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Submitting...";
+
+                    // The server must validate the attempt and deadline.
+                    examForm.requestSubmit();
+                }
+
+                examForm.addEventListener("submit", function (event) {
+                    if (submitted) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    submitted = true;
+                    stopTimer();
+
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Submitting...";
+                });
+
+                updateTimerDisplay();
+
+                if (remaining <= 0) {
+                    submitExamAutomatically();
+                    return;
+                }
+
+                timerInterval = setInterval(function () {
+                    if (submitted) {
+                        stopTimer();
+                        return;
+                    }
+
+                    remaining = Math.max(0, remaining - 1);
+                    updateTimerDisplay();
+
+                    if (remaining <= 0) {
+                        submitExamAutomatically();
+                    }
+                }, 1000);
+            })();
+        </script>
+
+    </div>
+
+    <div class="empty-message"
+         th:if="${questions == null or questions.isEmpty()}">
+
+        <p>No questions are currently available for this subject.</p>
+
+    </div>
+
+    <p>
+        <a class="btn" th:href="@{/dashboard}">
+            Back to Dashboard
+        </a>
+    </p>
+
+</main>
+<script th:src="@{/js/exam-monitoring.js}" defer></script>
+<script th:src="@{/js/exam-experience.js}" defer></script>
+
+</body>
+</html>

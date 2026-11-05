@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080d22">
+    <title>Exam Feedback | Quizzy</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        :root {
+            color-scheme: light;
+            --page: #f4f7fb;
+            --panel: #ffffff;
+            --panel-strong: #f8fbff;
+            --text: #263449;
+            --muted: #718096;
+            --line: #e3e9f1;
+            --primary: #2457a7;
+            --primary-soft: rgba(36, 87, 167, 0.08);
+            --primary-strong: #1b448d;
+            --teal: #0f9d91;
+            --gold: #d6a64f;
+            --good: #218653;
+            --danger: #d94b4b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text);
+            font-family: Inter, "Segoe UI", system-ui, Arial, sans-serif;
+            background:
+                radial-gradient(ellipse at 12% 0%, rgba(36, 87, 167, 0.08), transparent 38rem),
+                radial-gradient(ellipse at 93% 22%, rgba(15, 157, 145, 0.08), transparent 34rem),
+                var(--page);
+        }
+        .feedback-shell { width: min(1050px, 92%); margin: 0 auto; padding: 34px 0 64px; }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+        .brand {
+            color: var(--text);
+            font-size: 23px;
+            font-weight: 850;
+            letter-spacing: -.04em;
+            text-decoration: none;
+        }
+        .brand span { color: var(--primary); }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            color: var(--text);
+            background: rgba(255,255,255,.8);
+            text-decoration: none;
+            transition: border-color .2s, background .2s, transform .2s;
+        }
+        .back-link:hover { transform: translateY(-2px); border-color: rgba(36,87,167,0.22); background: rgba(36,87,167,0.04); }
+        .hero { max-width: 760px; margin: 0 auto 34px; text-align: center; }
+        .eyebrow {
+            display: inline-flex;
+            padding: 7px 12px;
+            border: 1px solid rgba(36, 87, 167, 0.12);
+            border-radius: 999px;
+            color: var(--primary);
+            background: rgba(36, 87, 167, 0.06);
+            font-size: 12px;
+            font-weight: 750;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .hero h1 {
+            margin: 17px 0 11px;
+            font-size: clamp(32px, 6vw, 54px);
+            letter-spacing: -.045em;
+            line-height: 1.08;
+        }
+        .gradient-text {
+            color: transparent;
+            background: linear-gradient(100deg, var(--primary) 8%, var(--teal) 55%, var(--gold));
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+        .hero-subtitle { margin: 0; color: var(--text); font-size: clamp(16px, 2.4vw, 20px); }
+        .hero-note { max-width: 610px; margin: 13px auto 0; color: var(--muted); line-height: 1.65; }
+        .flash {
+            margin: 0 auto 18px;
+            padding: 14px 17px;
+            border: 1px solid var(--line);
+            border-radius: 13px;
+            background: var(--panel);
+            animation: arrive .45s ease both;
+        }
+        .flash.success { border-color: rgba(33, 134, 83, 0.18); color: var(--good); }
+        .flash.error { border-color: rgba(217, 75, 75, 0.18); color: var(--danger); }
+        .attempt-list { display: grid; gap: 19px; }
+        .attempt-card {
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(244,247,251,0.96));
+            box-shadow: 0 12px 28px rgba(23,43,77,0.06);
+            backdrop-filter: blur(16px);
+            animation: arrive .5s ease both;
+            transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease;
+        }
+        .attempt-card:hover { transform: translateY(-3px); border-color: rgba(36,87,167,0.2); box-shadow: 0 18px 32px rgba(23,43,77,0.08); }
+        .attempt-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 21px 24px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(100deg, rgba(36,87,167,0.06), rgba(15,157,145,0.05));
+        }
+        .subject-name { margin: 0; font-size: 21px; letter-spacing: -.02em; }
+        .exam-date { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+            padding: 7px 11px;
+            border: 1px solid rgba(33,134,83,0.15);
+            border-radius: 999px;
+            color: var(--good);
+            background: rgba(33,134,83,0.08);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 12px rgba(33,134,83,0.4); }
+        .attempt-body { padding: 23px 24px 25px; }
+        .feedback-form { display: grid; gap: 21px; }
+        .rating-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .rating-control {
+            min-width: 0;
+            margin: 0;
+            padding: 15px;
+            border: 1px solid var(--line);
+            border-radius: 15px;
+            background: rgba(248, 251, 255, 0.8);
+        }
+        .rating-control legend { padding: 0 5px; color: var(--text); font-size: 14px; font-weight: 700; }
+        .stars { display: flex; gap: 5px; margin-top: 6px; }
+        .star {
+            display: inline-grid;
+            width: 39px;
+            height: 39px;
+            place-items: center;
+            border: 1px solid transparent;
+            border-radius: 11px;
+            color: #a0adbf;
+            background: transparent;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            transition: transform .16s ease, color .16s ease, background .16s ease;
+        }
+        .star:hover { transform: scale(1.17) rotate(-5deg); color: var(--gold); background: rgba(214,166,79,0.12); }
+        .star.is-active { color: var(--gold); animation: star-pop .28s ease both; }
+        .star:focus-visible, .reaction:focus-visible, .difficulty-option:focus-visible,
+        .submit-button:focus-visible, .back-link:focus-visible {
+            outline: 3px solid rgba(36,87,167,0.28);
+            outline-offset: 3px;
+        }
+        .rating-status { min-height: 19px; margin: 6px 0 0; color: var(--primary); font-size: 12px; }
+        .reaction-section, .difficulty-section { display: grid; gap: 10px; }
+        .field-title { margin: 0; color: var(--text); font-size: 14px; font-weight: 750; }
+        .reactions { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; }
+        .reaction {
+            display: grid;
+            justify-items: center;
+            gap: 4px;
+            min-width: 0;
+            padding: 10px 5px;
+            border: 1px solid var(--line);
+            border-radius: 13px;
+            color: var(--text);
+            background: rgba(248, 251, 255, 0.9);
+            cursor: pointer;
+            transition: transform .2s, border-color .2s, background .2s;
+        }
+        .reaction:hover { transform: translateY(-2px); border-color: rgba(15,157,145,0.22); }
+        .reaction[aria-pressed="true"] { border-color: rgba(15,157,145,0.3); background: rgba(15,157,145,0.08); box-shadow: 0 0 16px rgba(15,157,145,0.12); }
+        .reaction-emoji { font-size: 24px; }
+        .reaction-label { font-size: 11px; }
+        .difficulty-options { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+        .difficulty-option {
+            min-height: 42px;
+            padding: 8px 6px;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            color: var(--text-soft);
+            background: rgba(248, 251, 255, 0.9);
+            cursor: pointer;
+            transition: color .18s, border-color .18s, background .18s, transform .18s;
+        }
+        .difficulty-option:hover { transform: translateY(-2px); border-color: rgba(36,87,167,0.24); }
+        .difficulty-option[aria-pressed="true"] { border-color: rgba(36,87,167,0.3); color: var(--text); background: linear-gradient(120deg, rgba(36,87,167,0.06), rgba(15,157,145,0.08)); }
+        .difficulty-status { min-height: 18px; margin: 0; color: var(--primary); font-size: 12px; }
+        .comment-label { display: block; margin-bottom: 8px; color: var(--text); font-size: 14px; font-weight: 750; }
+        .comment-box {
+            display: block;
+            width: 100%;
+            min-height: 115px;
+            resize: vertical;
+            padding: 13px 15px;
+            border: 1px solid var(--line);
+            border-radius: 13px;
+            color: var(--text);
+            background: rgba(255,255,255,0.96);
+            font: inherit;
+            line-height: 1.55;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .comment-box::placeholder { color: #8a96a8; }
+        .comment-box:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(36,87,167,0.08); }
+        .counter { display: flex; justify-content: flex-end; margin-top: 6px; color: var(--muted); font-size: 12px; }
+        .form-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+        .privacy-note { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+        .submit-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 47px;
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 13px;
+            color: white;
+            background: linear-gradient(110deg, var(--primary), #346cbb 55%, #0f9d91);
+            box-shadow: 0 9px 24px rgba(36,87,167,0.18);
+            font-weight: 750;
+            cursor: pointer;
+            transition: transform .2s, filter .2s, box-shadow .2s;
+        }
+        .submit-button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 14px 26px rgba(36,87,167,0.22); }
+        .submit-button:disabled { opacity: .7; cursor: wait; }
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+        .is-submitting .spinner { display: inline-block; }
+        .submitted-panel { padding: 15px 17px; border: 1px solid rgba(33,134,83,0.18); border-radius: 13px; color: var(--good); background: rgba(33,134,83,0.08); }
+        .submitted-panel h3 { margin: 0 0 5px; color: var(--good); }
+        .submitted-panel p { margin: 0; color: var(--good); font-size: 13px; }
+        .empty-card { padding: 42px 22px; border: 1px solid var(--line); border-radius: 20px; text-align: center; background: var(--panel); }
+        .empty-icon { font-size: 32px; }
+        .empty-card h2 { margin: 10px 0 7px; }
+        .empty-card p { margin: 0; color: var(--muted); }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes star-pop { 50% { transform: scale(1.28); } }
+        @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 680px) {
+            .feedback-shell { width: min(100% - 28px, 560px); padding-top: 22px; }
+            .topbar { margin-bottom: 34px; }
+            .rating-grid { grid-template-columns: 1fr; }
+            .attempt-head, .attempt-body { padding-left: 17px; padding-right: 17px; }
+        }
+        @media (max-width: 430px) {
+            .brand { font-size: 20px; }
+            .back-link { padding: 9px 10px; font-size: 13px; }
+            .attempt-head { align-items: flex-start; }
+            .status-pill { padding: 6px 8px; font-size: 10px; }
+            .reactions { gap: 5px; }
+            .reaction-label { font-size: 10px; }
+            .difficulty-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .form-footer { align-items: stretch; flex-direction: column; }
+            .submit-button { width: 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+        }
+    </style>
+</head>
+<body>
+<main class="feedback-shell">
+    <header class="topbar">
+        <a class="brand" th:href="@{/dashboard}" aria-label="Quizzy dashboard">Quizzy<span>.</span></a>
+        <a class="back-link" th:href="@{/dashboard}"><span aria-hidden="true">←</span> Back to Dashboard</a>
+    </header>
+
+    <section class="hero">
+        <span class="eyebrow">Help us improve</span>
+        <h1><span class="gradient-text">Your Experience Matters!</span></h1>
+        <p class="hero-subtitle">Help us make every examination better.</p>
+        <p class="hero-note">
+            Share a few thoughts about your completed examinations. Your feedback
+            helps improve Quizzy and does not affect your examination marks.
+        </p>
+    </section>
+
+    <p class="flash success" th:if="${successMessage}" th:text="${successMessage}" role="status">
+        Your feedback has been submitted.
+    </p>
+    <p class="flash error" th:if="${errorMessage}" th:text="${errorMessage}" role="alert">
+        Please review your feedback and try again.
+    </p>
+
+    <section class="empty-card" th:if="${#lists.isEmpty(attempts)}">
+        <div class="empty-icon" aria-hidden="true">✦</div>
+        <h2>No examinations to review yet</h2>
+        <p>Your completed examinations will appear here when they are ready for feedback.</p>
+    </section>
+
+    <section class="attempt-list" aria-label="Completed examinations">
+        <article class="attempt-card" th:each="attempt : ${attempts}">
+            <header class="attempt-head">
+                <div>
+                    <h2 class="subject-name"
+                        th:text="${attempt.subject != null ? #strings.capitalize(attempt.subject) : 'Examination'}">
+                        Subject
+                    </h2>
+                    <p class="exam-date"
+                       th:text="${attempt.examDate != null
+                           ? #temporals.format(attempt.examDate, 'dd MMM yyyy · HH:mm')
+                           : 'Completed examination'}">
+                        Examination date
+                    </p>
+                </div>
+                <span class="status-pill">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    Completed
+                </span>
+            </header>
+
+            <div class="attempt-body">
+                <section class="submitted-panel" th:if="${attempt.hasFeedback}">
+                    <h3>Thanks for sharing your feedback!</h3>
+                    <p>Your response is saved. Ratings below are shown for your reference.</p>
+                    <div class="rating-grid" style="margin-top:15px">
+                        <p>Overall rating: <strong th:text="${attempt.feedback.overallRating + '/5'}">5/5</strong></p>
+                        <p>Question difficulty: <strong th:text="${attempt.feedback.difficultyRating + '/5'}">3/5</strong></p>
+                        <p>Question quality: <strong th:text="${attempt.feedback.qualityRating + '/5'}">4/5</strong></p>
+                        <p>Examination experience: <strong th:text="${attempt.feedback.experienceRating + '/5'}">5/5</strong></p>
+                    </div>
+                    <p th:if="${attempt.feedback.comment != null}"
+                       th:text="${'Your comment: ' + attempt.feedback.comment}">Your comment</p>
+                    <p th:if="${attempt.feedback.submittedAt != null}"
+                       style="margin-top:10px">
+                        Submitted
+                        <time th:text="${#temporals.format(attempt.feedback.submittedAt, 'dd MMM yyyy · HH:mm')}">Date</time>
+                    </p>
+                </section>
+
+                <form class="feedback-form"
+                      th:unless="${attempt.hasFeedback}"
+                      th:action="@{/feedback/{resultId}(resultId=${attempt.resultId})}"
+                      method="post">
+                    <input type="hidden" name="overallRating" value="">
+                    <input type="hidden" name="difficultyRating" value="">
+                    <input type="hidden" name="qualityRating" value="">
+                    <input type="hidden" name="experienceRating" value="">
+
+                    <section class="rating-grid" aria-label="Examination ratings">
+                        <fieldset class="rating-control" data-rating="overallRating">
+                            <legend>Overall Examination Rating <span aria-hidden="true">*</span></legend>
+                            <div class="stars" role="radiogroup" aria-label="Overall examination rating">
+                                <button class="star" type="button" data-value="1" role="radio" aria-checked="false" aria-label="1 of 5, Poor">★</button>
+                                <button class="star" type="button" data-value="2" role="radio" aria-checked="false" aria-label="2 of 5, Fair">★</button>
+                                <button class="star" type="button" data-value="3" role="radio" aria-checked="false" aria-label="3 of 5, Good">★</button>
+                                <button class="star" type="button" data-value="4" role="radio" aria-checked="false" aria-label="4 of 5, Very Good">★</button>
+                                <button class="star" type="button" data-value="5" role="radio" aria-checked="false" aria-label="5 of 5, Excellent">★</button>
+                            </div>
+                            <p class="rating-status" aria-live="polite">Choose a rating</p>
+                        </fieldset>
+                        <fieldset class="rating-control" data-rating="difficultyRating">
+                            <legend>Question Difficulty <span aria-hidden="true">*</span></legend>
+                            <div class="stars" role="radiogroup" aria-label="Question difficulty rating">
+                                <button class="star" type="button" data-value="1" role="radio" aria-checked="false" aria-label="1 of 5, Poor">★</button>
+                                <button class="star" type="button" data-value="2" role="radio" aria-checked="false" aria-label="2 of 5, Fair">★</button>
+                                <button class="star" type="button" data-value="3" role="radio" aria-checked="false" aria-label="3 of 5, Good">★</button>
+                                <button class="star" type="button" data-value="4" role="radio" aria-checked="false" aria-label="4 of 5, Very Good">★</button>
+                                <button class="star" type="button" data-value="5" role="radio" aria-checked="false" aria-label="5 of 5, Excellent">★</button>
+                            </div>
+                            <p class="rating-status" aria-live="polite">Choose a rating</p>
+                        </fieldset>
+                        <fieldset class="rating-control" data-rating="qualityRating">
+                            <legend>Question Quality <span aria-hidden="true">*</span></legend>
+                            <div class="stars" role="radiogroup" aria-label="Question quality rating">
+                                <button class="star" type="button" data-value="1" role="radio" aria-checked="false" aria-label="1 of 5, Poor">★</button>
+                                <button class="star" type="button" data-value="2" role="radio" aria-checked="false" aria-label="2 of 5, Fair">★</button>
+                                <button class="star" type="button" data-value="3" role="radio" aria-checked="false" aria-label="3 of 5, Good">★</button>
+                                <button class="star" type="button" data-value="4" role="radio" aria-checked="false" aria-label="4 of 5, Very Good">★</button>
+                                <button class="star" type="button" data-value="5" role="radio" aria-checked="false" aria-label="5 of 5, Excellent">★</button>
+                            </div>
+                            <p class="rating-status" aria-live="polite">Choose a rating</p>
+                        </fieldset>
+                        <fieldset class="rating-control" data-rating="experienceRating">
+                            <legend>Examination Experience <span aria-hidden="true">*</span></legend>
+                            <div class="stars" role="radiogroup" aria-label="Examination experience rating">
+                                <button class="star" type="button" data-value="1" role="radio" aria-checked="false" aria-label="1 of 5, Poor">★</button>
+                                <button class="star" type="button" data-value="2" role="radio" aria-checked="false" aria-label="2 of 5, Fair">★</button>
+                                <button class="star" type="button" data-value="3" role="radio" aria-checked="false" aria-label="3 of 5, Good">★</button>
+                                <button class="star" type="button" data-value="4" role="radio" aria-checked="false" aria-label="4 of 5, Very Good">★</button>
+                                <button class="star" type="button" data-value="5" role="radio" aria-checked="false" aria-label="5 of 5, Excellent">★</button>
+                            </div>
+                            <p class="rating-status" aria-live="polite">Choose a rating</p>
+                        </fieldset>
+                    </section>
+
+                    <section class="reaction-section">
+                        <h3 class="field-title">How did the examination feel overall?</h3>
+                        <div class="reactions" role="group" aria-label="Overall experience reaction">
+                            <button class="reaction" type="button" data-rating="5" aria-pressed="false">
+                                <span class="reaction-emoji" aria-hidden="true">😍</span><span class="reaction-label">Excellent</span>
+                            </button>
+                            <button class="reaction" type="button" data-rating="4" aria-pressed="false">
+                                <span class="reaction-emoji" aria-hidden="true">🙂</span><span class="reaction-label">Good</span>
+                            </button>
+                            <button class="reaction" type="button" data-rating="3" aria-pressed="false">
+                                <span class="reaction-emoji" aria-hidden="true">😐</span><span class="reaction-label">Average</span>
+                            </button>
+                            <button class="reaction" type="button" data-rating="2" aria-pressed="false">
+                                <span class="reaction-emoji" aria-hidden="true">😕</span><span class="reaction-label">Poor</span>
+                            </button>
+                            <button class="reaction" type="button" data-rating="1" aria-pressed="false">
+                                <span class="reaction-emoji" aria-hidden="true">😞</span><span class="reaction-label">Very Poor</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="difficulty-section">
+                        <h3 class="field-title">How would you describe the difficulty?</h3>
+                        <div class="difficulty-options" role="group" aria-label="Question difficulty">
+                            <button class="difficulty-option" type="button" data-value="1" aria-pressed="false">Very Easy</button>
+                            <button class="difficulty-option" type="button" data-value="2" aria-pressed="false">Easy</button>
+                            <button class="difficulty-option" type="button" data-value="3" aria-pressed="false">Normal</button>
+                            <button class="difficulty-option" type="button" data-value="4" aria-pressed="false">Hard</button>
+                            <button class="difficulty-option" type="button" data-value="5" aria-pressed="false">Very Hard</button>
+                        </div>
+                        <p class="difficulty-status" aria-live="polite">Select a difficulty. This maps directly to the existing 1–5 difficulty rating.</p>
+                    </section>
+
+                    <div>
+                        <label class="comment-label" th:for="|comment-${attempt.resultId}|">
+                            Optional comments <span style="color:var(--muted);font-weight:500">(up to 1,000 characters)</span>
+                        </label>
+                        <textarea class="comment-box"
+                                  th:id="|comment-${attempt.resultId}|"
+                                  name="comment"
+                                  maxlength="1000"
+                                  rows="4"
+                                  placeholder="Tell us what you liked or what we can improve..."></textarea>
+                        <div class="counter"><span class="character-count">0</span>&nbsp;/ 1,000</div>
+                    </div>
+
+                    <div class="form-footer">
+                        <p class="privacy-note">Your feedback is linked to this examination only and never changes your marks.</p>
+                        <button class="submit-button" type="submit">
+                            <span class="spinner" aria-hidden="true"></span>
+                            <span class="button-label">Submit Feedback</span>
+                            <span aria-hidden="true">→</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </article>
+    </section>
+</main>
+<script>
+    (() => {
+        const ratingLabels = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+        document.querySelectorAll('.rating-control').forEach((control) => {
+            const fieldName = control.dataset.rating;
+            const hiddenInput = control.closest('form').querySelector(
+                `input[name="${fieldName}"]`);
+            const stars = [...control.querySelectorAll('.star')];
+            const status = control.querySelector('.rating-status');
+
+            stars.forEach((star, index) => {
+                star.tabIndex = index === 0 ? 0 : -1;
+            });
+
+            const selectRating = (value) => {
+                hiddenInput.value = String(value);
+                stars.forEach((star) => {
+                    const active = Number(star.dataset.value) <= value;
+                    star.classList.toggle('is-active', active);
+                    star.setAttribute('aria-checked',
+                        Number(star.dataset.value) === value ? 'true' : 'false');
+                    star.tabIndex = Number(star.dataset.value) === value ? 0 : -1;
+                });
+                status.textContent = `${value} of 5 · ${ratingLabels[value - 1]}`;
+                if (fieldName === 'overallRating') {
+                    control.closest('form').querySelectorAll('.reaction')
+                        .forEach((reaction) => reaction.setAttribute(
+                            'aria-pressed',
+                            Number(reaction.dataset.rating) === value ? 'true' : 'false'));
+                }
+                if (fieldName === 'difficultyRating') {
+                    control.closest('form').querySelectorAll('.difficulty-option')
+                        .forEach((option) => option.setAttribute(
+                            'aria-pressed',
+                            Number(option.dataset.value) === value ? 'true' : 'false'));
+                }
+            };
+
+            stars.forEach((star) => {
+                star.addEventListener('click', () =>
+                    selectRating(Number(star.dataset.value)));
+                star.addEventListener('keydown', (event) => {
+                    const current = Number(hiddenInput.value || 0);
+                    let next = current;
+                    if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next = Math.min(5, current + 1);
+                    if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next = Math.max(1, current - 1);
+                    if (event.key === 'Home') next = 1;
+                    if (event.key === 'End') next = 5;
+                    if (next !== current) {
+                        event.preventDefault();
+                        selectRating(next);
+                        stars.find((candidate) =>
+                            Number(candidate.dataset.value) === next).focus();
+                    }
+                });
+            });
+
+            if (fieldName === 'overallRating') {
+                control.closest('form').querySelectorAll('.reaction')
+                    .forEach((reaction) => reaction.addEventListener('click', () =>
+                        selectRating(Number(reaction.dataset.rating))));
+            }
+        });
+
+        document.querySelectorAll('.difficulty-options').forEach((group) => {
+            const form = group.closest('form');
+            const hiddenInput = form.querySelector('input[name="difficultyRating"]');
+            const starControl = form.querySelector(
+                '.rating-control[data-rating="difficultyRating"]');
+            const status = group.parentElement.querySelector('.difficulty-status');
+            group.querySelectorAll('.difficulty-option').forEach((option) => {
+                option.addEventListener('click', () => {
+                    const value = Number(option.dataset.value);
+                    hiddenInput.value = String(value);
+                    group.querySelectorAll('.difficulty-option').forEach((button) =>
+                        button.setAttribute('aria-pressed',
+                            button === option ? 'true' : 'false'));
+                    status.textContent = `${option.textContent} · rating ${value} of 5`;
+                    const matchingStar = starControl.querySelector(
+                        `.star[data-value="${value}"]`);
+                    matchingStar.click();
+                });
+            });
+        });
+
+        document.querySelectorAll('.feedback-form').forEach((form) => {
+            const textarea = form.querySelector('.comment-box');
+            const count = form.querySelector('.character-count');
+            textarea.addEventListener('input', () => {
+                count.textContent = String(textarea.value.length);
+            });
+
+            form.addEventListener('submit', (event) => {
+                const ratingFields = [
+                    'overallRating', 'difficultyRating',
+                    'qualityRating', 'experienceRating'
+                ];
+                const missing = ratingFields.some((name) =>
+                    !form.querySelector(`input[name="${name}"]`).value);
+                if (missing) {
+                    event.preventDefault();
+                    const firstUnrated = [...form.querySelectorAll('.rating-control')]
+                        .find((control) => !form.querySelector(
+                            `input[name="${control.dataset.rating}"]`).value);
+                    if (firstUnrated) {
+                        firstUnrated.querySelector('.star').focus();
+                        firstUnrated.querySelector('.rating-status').textContent =
+                            'Please select a rating before submitting.';
+                    }
+                    return;
+                }
+                const button = form.querySelector('.submit-button');
+                button.disabled = true;
+                button.classList.add('is-submitting');
+                button.querySelector('.button-label').textContent = 'Submitting…';
+            });
+        });
+    })();
+</script>
+</body>
+</html>

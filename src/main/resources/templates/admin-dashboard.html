@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Admin Dashboard</title>
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --bg-soft: #edf4ff;
+            --surface: #ffffff;
+            --surface-strong: #f8fbff;
+            --primary: #2457a7;
+            --secondary: #0f9d91;
+            --text: #263449;
+            --muted: #718096;
+            --border: #e3e9f1;
+            --success: #218653;
+            --warning: #e99a36;
+            --danger: #d94b4b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at top left, rgba(36, 87, 167, 0.08), transparent 24rem),
+                radial-gradient(circle at top right, rgba(15, 157, 145, 0.08), transparent 20rem),
+                var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            padding: 18px max(4vw, 20px);
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 10px 24px rgba(23, 43, 77, 0.06);
+        }
+
+        .brand {
+            margin: 0;
+            font-size: 1.65rem;
+            letter-spacing: -0.04em;
+        }
+
+        .brand span { color: var(--primary); }
+
+        .top-actions, .quick-links {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        a, button { font: inherit; }
+
+        .top-actions a, .top-actions button, .quick-links a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 42px;
+            padding: 9px 13px;
+            border: 1px solid rgba(36, 87, 167, 0.12);
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), #346cbb);
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .top-actions form { margin: 0; }
+
+        .top-actions button {
+            background: rgba(255,255,255,0.04);
+            border-color: var(--border);
+        }
+
+        main { width: min(1320px, 92%); margin: 28px auto 50px; }
+        .intro { margin-bottom: 22px; }
+        .eyebrow {
+            margin: 0 0 6px;
+            color: #d8c6ff;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        h1, h2, h3 { color: var(--text); }
+        .intro h1 { margin: 0; font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.05em; }
+        .intro p:last-child { color: var(--muted); line-height: 1.55; }
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+        }
+        .card {
+            min-width: 0;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            box-shadow: 0 16px 34px rgba(23, 43, 77, 0.08);
+        }
+        .kpi-label { margin: 0; color: var(--muted); font-size: 14px; }
+        .kpi-value { margin: 10px 0 4px; color: var(--text); font-size: 32px; font-weight: 750; letter-spacing: -0.05em; }
+        .kpi-note { margin: 0; color: var(--muted); font-size: 12px; }
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+        .section-card { min-width: 0; }
+        .section-card h2 { margin: 0 0 5px; font-size: 19px; }
+        .section-description { margin: 0 0 17px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+        .metric { margin: 15px 0; }
+        .metric-heading {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .metric-heading strong { color: var(--text); }
+        .track { height: 10px; overflow: hidden; border-radius: 10px; background: rgba(255,255,255,0.06); }
+        .bar { height: 100%; min-width: 0; border-radius: inherit; background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .bar.average { background: linear-gradient(135deg, #10b981, #2dd4bf); }
+        .trend-chart {
+            display: flex;
+            align-items: end;
+            gap: 8px;
+            min-height: 170px;
+            overflow-x: auto;
+            padding: 15px 3px 4px;
+        }
+        .trend-column {
+            display: flex;
+            flex: 1 0 34px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: end;
+            gap: 6px;
+            min-height: 145px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+        .trend-value { font-size: 11px; font-weight: 700; color: var(--text); }
+        .trend-bar {
+            width: min(28px, 85%);
+            min-height: 3px;
+            border-radius: 6px 6px 2px 2px;
+            background: linear-gradient(180deg, #2457a7, #0f9d91);
+        }
+        .table-wrap { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        th { color: var(--muted); font-weight: 700; }
+        td { color: var(--text-soft); }
+        .empty { margin: 12px 0 0; padding: 13px; border-radius: 8px; background: rgba(255,255,255,0.04); color: var(--muted); font-size: 13px; }
+        .quick-section { margin-top: 18px; }
+        .quick-section h2 { margin-top: 0; font-size: 19px; }
+        .quick-links a { background: rgba(36, 87, 167, 0.06); border-color: rgba(36, 87, 167, 0.12); color: var(--primary); }
+        @media (max-width: 800px) {
+            .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .section-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 520px) {
+            .topbar { padding: 16px 4%; }
+            main { width: 92%; margin-top: 20px; }
+            .kpis { grid-template-columns: 1fr 1fr; gap: 9px; }
+            .card { padding: 15px; }
+            .kpi-value { font-size: 26px; }
+            .top-actions { width: 100%; }
+            .top-actions a, .top-actions button { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<header class="topbar">
+    <h1 class="brand">Quizzy <span aria-hidden="true">·</span> Admin</h1>
+    <nav class="top-actions" aria-label="Admin account">
+        <a th:href="@{/admin/analytics}">Detailed analytics</a>
+        <form th:action="@{/admin/logout}" method="post">
+            <button type="submit">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<main>
+    <section class="intro">
+        <p class="eyebrow">Administration overview</p>
+        <h1>Dashboard</h1>
+        <p>Current totals and recent activity from saved Quizzy records.</p>
+    </section>
+
+    <section class="kpis" aria-label="System statistics">
+        <article class="card">
+            <p class="kpi-label">Registered students</p>
+            <p class="kpi-value" th:text="${totalStudents}">0</p>
+            <p class="kpi-note">Student accounts in the database</p>
+        </article>
+        <article class="card">
+            <p class="kpi-label">Question bank</p>
+            <p class="kpi-value" th:text="${totalQuestions}">0</p>
+            <p class="kpi-note">Saved questions</p>
+        </article>
+        <article class="card">
+            <p class="kpi-label">Scheduled exams</p>
+            <p class="kpi-value" th:text="${totalSchedules}">0</p>
+            <p class="kpi-note">Exam schedules on record</p>
+        </article>
+        <article class="card">
+            <p class="kpi-label">Completed attempts</p>
+            <p class="kpi-value" th:text="${totalAttempts}">0</p>
+            <p class="kpi-note">Saved results with valid percentage data</p>
+        </article>
+        <article class="card">
+            <p class="kpi-label">Published results</p>
+            <p class="kpi-value" th:text="${totalPublishedResults}">0</p>
+            <p class="kpi-note">Results marked as published</p>
+        </article>
+        <article class="card">
+            <p class="kpi-label">Average exam percentage</p>
+            <p class="kpi-value">
+                <span th:text="${#numbers.formatDecimal(averagePercentage, 1, 1)}">0.0</span>%
+            </p>
+            <p class="kpi-note">Across valid saved result percentages</p>
+        </article>
+    </section>
+
+    <section class="section-grid">
+        <article class="card section-card">
+            <h2>Performance by subject</h2>
+            <p class="section-description">Attempt volume and average percentage for each subject.</p>
+            <div th:if="${#lists.isEmpty(subjectMetrics)}" class="empty">
+                Subject analytics will appear when valid exam results are available.
+            </div>
+            <div th:unless="${#lists.isEmpty(subjectMetrics)}">
+                <div class="metric" th:each="metric : ${subjectMetrics}">
+                    <div class="metric-heading">
+                        <strong th:text="${metric.subject}">Subject</strong>
+                        <span th:text="${metric.attempts + ' attempts · '
+                            + #numbers.formatDecimal(metric.averagePercentage, 1, 1) + '% average'}">
+                            0 attempts · 0.0% average
+                        </span>
+                    </div>
+                    <div class="track" role="img"
+                         th:aria-label="${metric.subject + ': ' + metric.attempts + ' attempts'}">
+                        <div class="bar" th:style="|width: ${metric.attemptsBarWidth}%;|"></div>
+                    </div>
+                    <div class="track" style="margin-top:5px" role="img"
+                         th:aria-label="${metric.subject + ' average percentage'}">
+                        <div class="bar average"
+                             th:style="|width: ${metric.averagePercentage}%;|"></div>
+                    </div>
+                </div>
+                <p class="section-description">Indigo: attempts relative to the busiest subject. Teal: average percentage.</p>
+            </div>
+        </article>
+
+        <article class="card section-card">
+            <h2>Participation trend</h2>
+            <p class="section-description">Attempts per date, showing the most recent dates with valid saved results.</p>
+            <div th:if="${#lists.isEmpty(participationTrend)}" class="empty">
+                Participation trends will appear after exam attempts have been saved.
+            </div>
+            <div class="trend-chart" th:unless="${#lists.isEmpty(participationTrend)}"
+                 role="img" aria-label="Exam attempts per date">
+                <div class="trend-column" th:each="point : ${participationTrend}">
+                    <span class="trend-value" th:text="${point.attempts}">0</span>
+                    <div class="trend-bar" th:style="|height: ${point.barHeight}px;|"></div>
+                    <time th:text="${#temporals.format(point.date, 'dd MMM')}">Date</time>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="section-grid">
+        <article class="card section-card">
+            <h2>Recent exam submissions</h2>
+            <p class="section-description">Latest valid saved attempts. Student credentials and private account data are not displayed.</p>
+            <div class="table-wrap" th:if="${!#lists.isEmpty(recentAttempts)}">
+                <table>
+                    <thead><tr><th>Subject</th><th>Submitted</th><th>Score</th></tr></thead>
+                    <tbody>
+                    <tr th:each="attempt : ${recentAttempts}">
+                        <td th:text="${attempt.subject}">Subject</td>
+                        <td><time th:text="${#temporals.format(attempt.examDate, 'dd MMM yyyy, HH:mm')}">Date</time></td>
+                        <td th:text="${attempt.percentage + '%'}">0%</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="empty" th:if="${#lists.isEmpty(recentAttempts)}">No completed exam attempts yet.</p>
+        </article>
+
+        <article class="card section-card">
+            <h2>Recently published results</h2>
+            <p class="section-description">Publication activity, without exposing student details.</p>
+            <div class="table-wrap" th:if="${!#lists.isEmpty(recentPublishedResults)}">
+                <table>
+                    <thead><tr><th>Subject</th><th>Published</th></tr></thead>
+                    <tbody>
+                    <tr th:each="result : ${recentPublishedResults}">
+                        <td th:text="${result.subject}">Subject</td>
+                        <td><time th:text="${#temporals.format(result.publishedAt, 'dd MMM yyyy, HH:mm')}">Date</time></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="empty" th:if="${#lists.isEmpty(recentPublishedResults)}">No results have been published yet.</p>
+        </article>
+    </section>
+
+    <section class="card section-card" style="margin-top:16px">
+        <h2>Recent support activity</h2>
+        <p class="section-description">Conversation status and update time only; message contents are never shown here.</p>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(recentSupportActivity)}">
+            <table>
+                <thead><tr><th>Activity</th><th>Status</th><th>Updated</th></tr></thead>
+                <tbody>
+                <tr th:each="activity : ${recentSupportActivity}">
+                    <td>Support conversation updated</td>
+                    <td th:text="${activity.status}">OPEN</td>
+                    <td><time th:text="${#temporals.format(activity.updatedAt, 'dd MMM yyyy, HH:mm')}">Date</time></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="empty" th:if="${#lists.isEmpty(recentSupportActivity)}">No support activity is available yet.</p>
+    </section>
+
+    <section class="card quick-section">
+        <h2>Quick admin navigation</h2>
+        <nav class="quick-links" aria-label="Admin features">
+            <a th:href="@{/admin/questions}">Manage questions</a>
+            <a th:href="@{/admin/results}">Student results</a>
+            <a th:href="@{/admin/schedules}">Exam schedules</a>
+            <a th:href="@{/admin/feedback}">Feedback</a>
+            <a th:href="@{/admin/support}">Support conversations</a>
+            <a th:href="@{/admin/announcements}">Notifications / announcements</a>
+            <a th:href="@{/admin/announcement-deliveries}">Email delivery tracking</a>
+            <a th:href="@{/admin/analytics}">Detailed analytics</a>
+        </nav>
+    </section>
+</main>
+</body>
+</html>

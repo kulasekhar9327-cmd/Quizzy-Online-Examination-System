@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Notification Preferences</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+    <style>
+        .preference-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 16px 0;
+            border-bottom: 1px solid #e6e8f0;
+        }
+        .preference-row label { font-weight: 600; }
+        .preference-row p { margin: 5px 0 0; color: #64748b; font-size: 13px; }
+        .preference-row input { width: 20px; height: 20px; }
+        @media (max-width: 520px) {
+            .preference-row { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+<main class="support-page narrow">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Your account</p>
+            <h1>Notification preferences</h1>
+            <p class="muted">Choose which optional updates Quizzy may send to you.</p>
+        </div>
+        <nav class="support-actions" aria-label="Notification settings navigation">
+            <a class="support-button secondary" th:href="@{/dashboard}">Dashboard</a>
+            <a class="support-button secondary" th:href="@{/notifications}">Notifications</a>
+        </nav>
+    </header>
+
+    <p class="notice success" th:if="${success}" th:text="${success}" role="status"></p>
+
+    <form class="support-card support-form"
+          th:action="@{/notification-preferences}" method="post">
+        <div class="preference-row">
+            <div>
+                <label for="examEmailEnabled">Exam-related email</label>
+                <p>Exam availability and schedule updates.</p>
+            </div>
+            <input id="examEmailEnabled" name="examEmailEnabled" type="checkbox"
+                   value="true" th:checked="${preferences.examEmailEnabled}">
+        </div>
+        <div class="preference-row">
+            <div>
+                <label for="resultEmailEnabled">Result publication email</label>
+                <p>Updates when an exam result is published.</p>
+            </div>
+            <input id="resultEmailEnabled" name="resultEmailEnabled" type="checkbox"
+                   value="true" th:checked="${preferences.resultEmailEnabled}">
+        </div>
+        <div class="preference-row">
+            <div>
+                <label for="supportEmailEnabled">Support message email</label>
+                <p>Updates about replies to your support conversations.</p>
+            </div>
+            <input id="supportEmailEnabled" name="supportEmailEnabled" type="checkbox"
+                   value="true" th:checked="${preferences.supportEmailEnabled}">
+        </div>
+        <div class="preference-row">
+            <div>
+                <label for="announcementEmailEnabled">Admin announcement email</label>
+                <p>Optional administrative announcements.</p>
+            </div>
+            <input id="announcementEmailEnabled" name="announcementEmailEnabled"
+                   type="checkbox" value="true"
+                   th:checked="${preferences.announcementEmailEnabled}">
+        </div>
+        <div class="preference-row">
+            <div>
+                <label for="inAppEnabled">In-app notifications</label>
+                <p>Show optional notices in your Quizzy notification center.</p>
+            </div>
+            <input id="inAppEnabled" name="inAppEnabled" type="checkbox"
+                   value="true" th:checked="${preferences.inAppEnabled}">
+        </div>
+        <p class="muted">
+            Essential account and security notices are always retained.
+        </p>
+        <button class="support-button" type="submit">Save preferences</button>
+    </form>
+</main>
+</body>
+</html>

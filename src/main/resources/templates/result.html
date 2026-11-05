@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Quizzy - Exam Result</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4ff;
+            text-align: center;
+            padding: 50px 15px;
+            color: #1f2937;
+        }
+
+        .card {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px #00000012;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin: 10px 0;
+        }
+
+        .pending {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 20px;
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: bold;
+        }
+
+        .message {
+            line-height: 1.7;
+            margin-top: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .dashboard-btn {
+            background: #16a34a;
+        }
+
+        .dashboard-btn:hover {
+            background: #15803d;
+        }
+    </style>
+</head>
+
+<body>
+<div class="card">
+
+    <h1>Exam Submitted Successfully!</h1>
+
+    <div class="status-icon" aria-hidden="true">✓</div>
+
+    <p class="pending">Result Pending Publication</p>
+
+    <p class="message"
+       th:text="${message != null
+           ? message
+           : 'Your exam was submitted. Your marks will be available after the administrator publishes your result.'}">
+        Your exam was submitted. Your marks will be available after publication.
+    </p>
+
+    <div class="buttons">
+        <a class="btn dashboard-btn" href="/dashboard">
+            Go to Dashboard
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,276 @@
+﻿
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+    <title>Quizzy - Java Examination</title>
+    <link rel="stylesheet" th:href="@{/css/exam-monitoring.css}">
+    <link rel="stylesheet" th:href="@{/css/exam-experience.css}">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4ff;
+            margin: 0;
+            padding: 30px 15px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+        }
+
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin-top: 0;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fef08a;
+        }
+
+        .question {
+            background: white;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .option {
+            display: block;
+            padding: 10px;
+            margin-top: 8px;
+            background: #f8fafc;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            background: #dbeafe;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+
+<body>
+<main class="container exam-mode" data-exam-mode>
+
+    <section class="exam-preface" data-exam-preface aria-labelledby="preface-title"
+             th:if="${!questions.isEmpty()}">
+        <h1 id="preface-title">Java Online Examination</h1>
+        <p>Subject: Java</p>
+        <div class="exam-summary" aria-label="Examination details">
+            <div><strong>Total questions</strong><span th:text="${questions.size()}">0</span></div>
+            <div><strong>Total marks</strong><span th:text="${questions.size()}">0</span></div>
+            <div><strong>Duration</strong><span th:text="${durationMinutes != null ? durationMinutes + ' minutes' : 'See countdown'}">See countdown</span></div>
+        </div>
+        <div class="error-message" th:if="${errorMessage != null}"
+             th:text="${errorMessage}" role="alert"></div>
+        <section class="exam-rules" aria-labelledby="exam-instructions-title">
+            <h2 id="exam-instructions-title">Important exam instructions</h2>
+            <ul>
+                <li>Each question carries 1 mark; there is no negative marking.</li>
+                <li>You will receive 2 minutes per question.</li>
+                <li>Your exam timer starts when you start the exam.</li>
+                <li>Choose the best answer for each question.</li>
+                <li>Submit your answers before the timer expires.</li>
+                <li>Tab switches and loss of focus may show a browser warning.</li>
+                <li>Copy, cut, and paste actions may show a warning; ordinary text selection is not monitored.</li>
+                <li>Fullscreen is unavailable in some browsers.</li>
+                <li>The server confirms monitoring alerts and applies the existing warning policy.</li>
+            </ul>
+        </section>
+        <div th:replace="~{fragments/exam-security-panel :: panel}"></div>
+        <p class="exam-entry-message" data-exam-entry-message role="alert" aria-live="assertive"></p>
+        <div class="exam-preface-actions">
+            <button class="exam-continue-button" type="button" data-exam-continue hidden>
+                Continue without fullscreen
+            </button>
+            <a class="btn" th:href="@{/dashboard}">Back to Dashboard</a>
+        </div>
+    </section>
+
+    <section class="exam-workspace" data-exam-workspace hidden
+             th:if="${!questions.isEmpty()}" aria-label="Examination workspace">
+        <header class="exam-workspace-header">
+            <div>
+                <h1 class="exam-workspace-title">Java Online Examination</h1>
+                <p class="exam-workspace-subtitle">Java</p>
+            </div>
+            <div class="exam-workspace-metrics">
+                <p class="timer">Time left:
+                    <span id="timer" th:text="${duration}">60</span> seconds
+                </p>
+                <div data-exam-security-slot></div>
+            </div>
+        </header>
+        <p class="exam-entry-message" data-workspace-entry-message
+           role="status" hidden></p>
+        <div class="exam-progress-wrap">
+            <span>Question <strong data-current-question>1</strong> of
+                <strong data-question-count th:text="${questions.size()}">0</strong>
+            </span>
+            <span class="exam-progress-track">
+                <span class="exam-progress-bar" data-exam-progress role="progressbar"
+                      aria-label="Question progress" aria-valuemin="1" aria-valuenow="1"
+                      th:aria-valuemax="${questions.size()}"></span>
+            </span>
+        </div>
+        <nav class="exam-question-nav" data-question-navigation
+             aria-label="Question navigation"></nav>
+        <form id="activeQuizForm" data-exam-form th:action="@{/submit}" method="post">
+            <input type="hidden" name="attemptId" th:value="${attemptId}">
+            <div class="question exam-question-card" data-exam-question
+                 th:each="question, stat : ${questions}">
+                <div class="exam-question-content" data-exam-content>
+                    <h2>
+                        <span th:text="${stat.count}">1</span>.
+                        <span th:text="${question.text}">Question text</span>
+                    </h2>
+                    <label class="option exam-option"
+                           th:each="option, optStat : ${question.options}">
+                        <input type="radio"
+                               th:name="'q' + ${stat.index}"
+                               th:value="${optStat.index}">
+                        <span th:text="${option}">Answer option</span>
+                    </label>
+                </div>
+            </div>
+            <div class="exam-question-controls">
+                <button class="exam-step-button" type="button" data-question-previous>Previous</button>
+                <button class="exam-step-button" type="button" data-question-next>Next</button>
+                <button class="exam-submit-button" id="submitButton" type="submit">
+                    Submit Examination
+                </button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<script th:inline="javascript">
+    const durationValue = /*[[${duration}]]*/ 60;
+    let timeLeft = Number(durationValue);
+
+    const timerDisplay = document.getElementById("timer");
+    const quizForm = document.getElementById("activeQuizForm");
+
+    let submitted = false;
+    let countdown = null;
+
+    function submitWhenTimeExpires() {
+        if (submitted || !quizForm) {
+            return;
+        }
+
+        window.addEventListener("quizzy:attempt-disqualified", function () {
+            submitted = true;
+            if (countdown !== null) {
+                clearInterval(countdown);
+                countdown = null;
+            }
+            if (timerDisplay) {
+                timerDisplay.textContent = "Disqualified";
+            }
+        });
+
+        if (countdown !== null) {
+            clearInterval(countdown);
+            countdown = null;
+        }
+
+        timeLeft = 0;
+        timerDisplay.textContent = "0";
+
+        alert("Time is up! Your exam will be submitted.");
+
+        quizForm.requestSubmit();
+    }
+
+    if (quizForm) {
+        const submitButton =
+            quizForm.querySelector('button[type="submit"]');
+
+        if (timeLeft <= 0) {
+            submitWhenTimeExpires();
+        } else {
+            countdown = setInterval(function () {
+                if (submitted) {
+                    clearInterval(countdown);
+                    countdown = null;
+                    return;
+                }
+
+                timeLeft = Math.max(0, timeLeft - 1);
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft === 0) {
+                    submitWhenTimeExpires();
+                }
+            }, 1000);
+        }
+
+        quizForm.addEventListener("submit", function (event) {
+            if (submitted) {
+                event.preventDefault();
+                return;
+            }
+
+            submitted = true;
+
+            if (countdown !== null) {
+                clearInterval(countdown);
+                countdown = null;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = "Submitting...";
+        });
+    }
+</script>
+<script th:src="@{/js/exam-monitoring.js}" defer></script>
+<script th:src="@{/js/exam-experience.js}" defer></script>
+
+</body>
+</html>

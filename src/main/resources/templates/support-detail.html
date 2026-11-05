@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Support Conversation</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+</head>
+<body>
+<main class="support-page narrow">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Quizzy support</p>
+            <h1 th:text="${conversation.subject}">Conversation subject</h1>
+            <p class="conversation-meta">
+                <span th:text="${#strings.replace(conversation.category.name(), '_', ' ')}">Category</span>
+                <span aria-hidden="true">·</span>
+                <span class="badge"
+                      th:text="${#strings.replace(conversation.status.name(), '_', ' ')}">Status</span>
+            </p>
+        </div>
+        <a class="support-button secondary" th:href="@{/support}">All conversations</a>
+    </header>
+
+    <section class="support-card message-thread" aria-label="Conversation messages">
+        <article class="message" th:each="entry : ${messages}"
+                 th:classappend="${entry.sender.name() == 'STUDENT'} ? ' from-student' : ' from-admin'">
+            <div class="message-heading">
+                <strong th:text="${entry.sender.name() == 'STUDENT' ? 'You' : 'Quizzy Support'}">Sender</strong>
+                <time th:text="${#temporals.format(entry.sentAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+            </div>
+            <p class="message-content" th:text="${entry.content}">Message text</p>
+        </article>
+    </section>
+
+    <p class="notice error" th:if="${error}" th:text="${error}" role="alert"></p>
+
+    <form class="support-card support-form"
+          th:if="${conversation.status.name() != 'RESOLVED' and conversation.status.name() != 'CLOSED'}"
+          th:action="@{/support/{id}/messages(id=${conversation.id})}" method="post">
+        <label for="message">Reply</label>
+        <textarea id="message" name="message" rows="5"
+                  maxlength="4000" required></textarea>
+        <button class="support-button" type="submit">Send reply</button>
+    </form>
+    <p class="support-card muted" th:if="${conversation.status.name() == 'RESOLVED' or conversation.status.name() == 'CLOSED'}">
+        This conversation is resolved or closed and can no longer receive replies.
+    </p>
+</main>
+</body>
+</html>

@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Quizzy | Exam Result</title>
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <style>
+        .result-container {
+            max-width: 650px;
+            margin: 60px auto;
+            padding: 30px;
+            background: white;
+            border: 1px solid #e3e5f2;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .score {
+            font-size: 36px;
+            font-weight: bold;
+            color: #5b55e7;
+        }
+
+        .percentage {
+            font-size: 22px;
+            margin: 15px 0 25px;
+        }
+
+        .error-message {
+            color: #b42318;
+            margin: 20px 0;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 22px;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .dashboard-btn {
+            background: #16a34a;
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="result-container">
+
+    <h1 th:if="${resultSaved}">
+        Exam Submitted Successfully!
+    </h1>
+
+    <h1 th:unless="${resultSaved}">
+        Result Not Saved
+    </h1>
+
+    <p class="error-message"
+       th:if="${saveError}"
+       th:text="${saveError}">
+        Your result could not be saved.
+    </p>
+
+    <h2 th:text="${examTitle}">Programming Exam</h2>
+
+    <div th:if="${score != null and totalQuestions != null}">
+        <p>Your Score</p>
+
+        <div class="score">
+            <span th:text="${score}">0</span> /
+            <span th:text="${totalQuestions}">5</span>
+        </div>
+
+        <p class="percentage"
+           th:if="${percentage != null}">
+            Percentage:
+            <strong th:text="${percentage} + '%'">0%</strong>
+        </p>
+    </div>
+
+    <div class="buttons">
+
+        <a class="btn"
+           th:href="${#strings.startsWith(examTitle != null ? examTitle.toLowerCase() : '', 'python') ? '/exams/python' : #strings.startsWith(examTitle != null ? examTitle.toLowerCase() : '', 'sql') ? '/exams/sql' : #strings.startsWith(examTitle != null ? examTitle.toLowerCase() : '', 'aptitude') ? '/exams/aptitude' : '/exams/mock-tests'}">
+            Take Exam Again
+        </a>
+
+        <a class="btn dashboard-btn" th:href="@{/dashboard}">
+            Go Back to Dashboard
+        </a>
+
+    </div>
+
+</main>
+
+</body>
+</html>

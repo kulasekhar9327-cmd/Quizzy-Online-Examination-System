@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Results | Quizzy Admin</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #263449;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 24px;
+        }
+
+        h1 { margin: 0 0 8px; color: #172b4d; }
+        .subtitle { margin: 0; color: #718096; }
+
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav a, .logout button {
+            display: inline-block;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 7px;
+            background: #2457a7;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .nav a:hover, .logout button:hover { background: #1b448d; }
+        .logout { display: inline; margin: 0; }
+
+        .summary {
+            padding: 22px;
+            margin-bottom: 22px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-label { color: #6b7280; font-size: 14px; }
+
+        .summary-number {
+            margin-top: 8px;
+            color: #4338ca;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .table-card {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1150px;
+        }
+
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th { background: #eef4ff; color: #172b4d; font-weight: bold; }
+        tbody tr:hover { background: #f9fafb; }
+
+        .percentage {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #e0e7ff;
+            color: #3730a3;
+            font-weight: bold;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .pending { background: #fef3c7; color: #92400e; }
+        .published { background: #d1fae5; color: #065f46; }
+
+        .publish-button {
+            padding: 9px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #059669;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .publish-button:hover { background: #047857; }
+
+        .message {
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+
+        .success-message { background: #d1fae5; color: #065f46; }
+        .error-message { background: #fee2e2; color: #991b1b; }
+
+        .empty { padding: 35px; text-align: center; color: #6b7280; }
+
+        @media (max-width: 600px) {
+            body { padding: 14px; }
+            .header { align-items: flex-start; }
+            h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header class="header">
+        <div>
+            <h1>Student Exam Results</h1>
+            <p class="subtitle">
+                Quizzy Admin Dashboard — Review and publish results
+            </p>
+        </div>
+
+        <nav class="nav">
+            <a th:href="@{/admin/schedules}">Schedules</a>
+            <a th:href="@{/admin/questions}">Question Bank</a>
+            <a th:href="@{/admin/feedback}">Student Feedback</a>
+            <a th:href="@{/admin/support}">Student Support Inbox</a>
+
+            <form class="logout"
+                  th:action="@{/admin/logout}"
+                  method="post">
+                <button type="submit">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <div class="message success-message"
+         th:if="${successMessage}"
+         th:text="${successMessage}">
+        Result published successfully.
+    </div>
+
+    <div class="message error-message"
+         th:if="${errorMessage}"
+         th:text="${errorMessage}">
+        An error occurred.
+    </div>
+
+    <section class="summary">
+        <div class="summary-label">Total Exam Attempts</div>
+        <div class="summary-number" th:text="${totalResults}">0</div>
+    </section>
+
+    <section class="summary">
+        <form th:action="@{/admin/results}" method="get">
+            <label for="search">Search student or subject</label>
+            <input id="search" name="search" type="search"
+                   th:value="${search}" maxlength="200">
+
+            <label for="status">Publication status</label>
+            <select id="status" name="status">
+                <option value="all" th:selected="${status == 'all'}">All</option>
+                <option value="pending" th:selected="${status == 'pending'}">Pending</option>
+                <option value="published" th:selected="${status == 'published'}">Published</option>
+            </select>
+
+            <label for="fromDate">Exam date from</label>
+            <input id="fromDate" name="fromDate" type="date"
+                   th:value="${fromDate}">
+
+            <label for="toDate">Exam date to</label>
+            <input id="toDate" name="toDate" type="date"
+                   th:value="${toDate}">
+
+            <button type="submit">Filter</button>
+            <a th:href="@{/admin/results}">Clear</a>
+        </form>
+    </section>
+
+    <form id="bulkPublishForm" th:action="@{/admin/results/publish}" method="post">
+        <button class="publish-button" type="submit">
+            Publish Selected Pending Results
+        </button>
+    </form>
+
+    <section class="table-card">
+
+        <table th:if="${!#lists.isEmpty(results)}">
+            <thead>
+            <tr>
+                <th>Select</th>
+                <th>Result ID</th>
+                <th>Student Name</th>
+                <th>Email</th>
+                <th>Subject</th>
+                <th>Score</th>
+                <th>Percentage</th>
+                <th>Exam Date</th>
+                <th>Publication Status</th>
+                <th>Publication Date</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="result : ${results}">
+                <td>
+                    <input type="checkbox" name="resultIds"
+                           form="bulkPublishForm"
+                           th:value="${result.id}"
+                           th:disabled="${result.published}"
+                           th:aria-label="|Select result ${result.id}|">
+                </td>
+                <td th:text="${result.id}">0</td>
+                <td th:text="${result.studentName}">Student</td>
+                <td th:text="${result.email}">student@example.com</td>
+                <td th:text="${result.subject}">Python</td>
+
+                <td>
+                    <span th:text="${result.score}">0</span>
+                    /
+                    <span th:text="${result.totalQuestions}">0</span>
+                </td>
+
+                <td>
+                    <span class="percentage">
+                        <span th:text="${result.percentage}">0</span>%
+                    </span>
+                </td>
+
+                <td th:text="${result.examDate != null
+                    ? #temporals.format(result.examDate, 'dd MMM yyyy, hh:mm a')
+                    : '—'}">—</td>
+
+                <td>
+                    <span class="status published"
+                          th:if="${result.published}">
+                        Published
+                    </span>
+
+                    <span class="status pending"
+                          th:unless="${result.published}">
+                        Pending
+                    </span>
+                </td>
+
+                <td th:text="${result.publishedAt != null
+                    ? #temporals.format(result.publishedAt, 'dd MMM yyyy, hh:mm a')
+                    : '—'}">—</td>
+
+                <td>
+                    <form th:if="${!result.published}"
+                          th:action="@{/admin/results/{id}/publish(id=${result.id})}"
+                          method="post"
+                          onsubmit="return confirm('Publish this result for the student?');">
+
+                        <button class="publish-button" type="submit">
+                            Publish Result
+                        </button>
+                    </form>
+
+                    <span th:if="${result.published}">
+                        Already published
+                    </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="empty" th:if="${#lists.isEmpty(results)}">
+            No exam results found yet.
+        </div>
+
+    </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Scheduled Exam Question</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px #00000015;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            margin: 7px 0 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        button, .link {
+            display: inline-block;
+            padding: 10px 16px;
+            border: 0;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            background: #5145cd;
+            color: white;
+        }
+
+        .error {
+            color: #b00020;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Edit Question</h2>
+
+    <p>
+        Exam:
+        <strong th:text="${exam.examName}">Scheduled Exam</strong>
+    </p>
+
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <form th:action="@{/admin/schedules/{scheduleId}/questions/{questionId}/edit(
+            scheduleId=${exam.id}, questionId=${question.id})}"
+          method="post">
+
+        <label for="questionText">Question</label>
+        <textarea id="questionText" name="questionText" rows="3"
+                  required th:text="${question.questionText}"></textarea>
+
+        <label for="optionA">Option A</label>
+        <input id="optionA" name="optionA" required
+               th:value="${question.optionA}">
+
+        <label for="optionB">Option B</label>
+        <input id="optionB" name="optionB" required
+               th:value="${question.optionB}">
+
+        <label for="optionC">Option C</label>
+        <input id="optionC" name="optionC" required
+               th:value="${question.optionC}">
+
+        <label for="optionD">Option D</label>
+        <input id="optionD" name="optionD" required
+               th:value="${question.optionD}">
+
+        <label for="correctAnswer">Correct Answer</label>
+        <select id="correctAnswer" name="correctAnswer" required>
+            <option value="A" th:selected="${question.correctAnswer == 'A'}">A</option>
+            <option value="B" th:selected="${question.correctAnswer == 'B'}">B</option>
+            <option value="C" th:selected="${question.correctAnswer == 'C'}">C</option>
+            <option value="D" th:selected="${question.correctAnswer == 'D'}">D</option>
+        </select>
+
+        <button type="submit">Save Changes</button>
+
+        <a class="link"
+           th:href="@{/admin/schedules/{id}/questions(id=${exam.id})}">
+            Cancel
+        </a>
+    </form>
+</div>
+</body>
+</html>

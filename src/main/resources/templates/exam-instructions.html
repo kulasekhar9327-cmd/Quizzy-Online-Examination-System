@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${examTitle != null ? examTitle + ' - Instructions' : 'Exam Instructions'}">
+        Exam Instructions
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            padding: 32px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.10);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #1d4ed8;
+        }
+
+        .subtitle {
+            margin-bottom: 28px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .instructions {
+            padding: 20px;
+            margin-bottom: 24px;
+            border-radius: 10px;
+            background: #eff6ff;
+        }
+
+        .instructions h2,
+        .duration-section h2 {
+            margin-top: 0;
+            font-size: 19px;
+        }
+
+        .instructions ul {
+            padding-left: 22px;
+            margin-bottom: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .duration-section {
+            margin-bottom: 24px;
+        }
+
+        .duration-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 15px;
+            margin-top: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .duration-option:hover {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .duration-option input {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .duration-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .duration-details strong {
+            color: #0f172a;
+        }
+
+        .duration-details span {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .error-message {
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            flex: 1;
+            min-width: 150px;
+            padding: 13px 18px;
+            border: none;
+            border-radius: 9px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .start-btn {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .start-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .back-btn {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .back-btn:hover {
+            background: #cbd5e1;
+        }
+
+        .note {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 22px 18px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="container">
+
+    <h1 th:text="${examTitle != null ? examTitle : 'Exam Instructions'}">
+        Exam Instructions
+    </h1>
+
+    <p class="subtitle">
+        Please read the instructions and select your exam duration.
+    </p>
+
+    <div class="error-message"
+         th:if="${errorMessage != null}"
+         th:text="${errorMessage}"
+         role="alert">
+        Please check your selection.
+    </div>
+
+    <section class="instructions">
+        <h2>Important Instructions</h2>
+        <ul>
+            <li>Each question carries <strong>1 mark</strong>.</li>
+            <li>There is <strong>no negative marking</strong>.</li>
+            <li>You will receive <strong>2 minutes per question</strong>.</li>
+            <li>Your exam timer starts when you start the exam.</li>
+            <li>Choose the best answer for each question.</li>
+            <li>Submit your answers before the timer expires.</li>
+            <li>Tab switches and loss of focus may show a browser warning.</li>
+            <li>Text selection, dragging, and copy, cut, or paste actions in the exam area are discouraged or blocked where supported; clipboard actions may show a warning.</li>
+            <li>You may enter fullscreen using the control on the exam page. Fullscreen is unavailable in some browsers.</li>
+            <li>Monitoring alerts are confirmed by the server, which applies the existing warning and disqualification policy.</li>
+        </ul>
+    </section>
+
+    <!--
+        Java defaults to /start-exam.
+        The subject controller supplies /exams/start
+        for Python, SQL, Aptitude, and Mock Tests.
+    -->
+    <form th:action="${startExamAction != null ? startExamAction : '/start-exam'}"
+          data-exam-start-form
+          method="post">
+
+        <input type="hidden"
+               name="subject"
+               th:value="${subject != null ? subject : 'java'}">
+
+        <section class="duration-section">
+            <h2>Select Exam Duration</h2>
+
+            <label class="duration-option">
+                <input type="radio"
+                       name="durationMinutes"
+                       value="30"
+                       required
+                       th:checked="${selectedDurationMinutes != null and selectedDurationMinutes == 30}">
+
+                <span class="duration-details">
+                    <strong>30 Minutes</strong>
+                    <span>15 questions · 15 marks</span>
+                </span>
+            </label>
+
+            <label class="duration-option">
+                <input type="radio"
+                       name="durationMinutes"
+                       value="60"
+                       th:checked="${selectedDurationMinutes != null and selectedDurationMinutes == 60}">
+
+                <span class="duration-details">
+                    <strong>60 Minutes</strong>
+                    <span>30 questions · 30 marks</span>
+                </span>
+            </label>
+
+            <label class="duration-option">
+                <input type="radio"
+                       name="durationMinutes"
+                       value="90"
+                       th:checked="${selectedDurationMinutes != null and selectedDurationMinutes == 90}">
+
+                <span class="duration-details">
+                    <strong>90 Minutes</strong>
+                    <span>45 questions · 45 marks</span>
+                </span>
+            </label>
+
+            <label class="duration-option">
+                <input type="radio"
+                       name="durationMinutes"
+                       value="120"
+                       th:checked="${selectedDurationMinutes != null and selectedDurationMinutes == 120}">
+
+                <span class="duration-details">
+                    <strong>120 Minutes</strong>
+                    <span>60 questions · 60 marks</span>
+                </span>
+            </label>
+
+            <label class="duration-option">
+                <input type="radio"
+                       name="durationMinutes"
+                       value="150"
+                       th:checked="${selectedDurationMinutes != null and selectedDurationMinutes == 150}">
+
+                <span class="duration-details">
+                    <strong>150 Minutes</strong>
+                    <span>75 questions · 75 marks</span>
+                </span>
+            </label>
+        </section>
+
+        <div class="actions">
+            <a th:href="@{/dashboard}" class="btn back-btn">
+                Back to Dashboard
+            </a>
+
+            <button type="submit" class="btn start-btn">
+                Start Exam
+            </button>
+        </div>
+    </form>
+
+    <p class="note">
+        Please make sure you have enough uninterrupted time before starting.
+    </p>
+
+</main>
+<script th:src="@{/js/exam-monitoring.js}" defer></script>
+</body>
+</html>

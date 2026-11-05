@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Announcement Delivery Tracking</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+    <style>
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 11px 9px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { white-space: nowrap; color: #475569; }
+        td { font-size: 13px; }
+        .filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+        .filters label { display: grid; gap: 5px; }
+        .pagination { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; }
+    </style>
+</head>
+<body>
+<main class="support-page">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Quizzy administration</p>
+            <h1>Announcement delivery tracking</h1>
+            <p class="muted">Per-recipient status. SENT means the email service confirmed the send call.</p>
+        </div>
+        <nav class="support-actions" aria-label="Admin delivery navigation">
+            <a class="support-button secondary" th:href="@{/admin/dashboard}">Dashboard</a>
+            <a class="support-button secondary" th:href="@{/admin/announcements}">Announcements</a>
+        </nav>
+    </header>
+
+    <p class="notice error" th:if="${error}" th:text="${error}" role="alert"></p>
+
+    <form class="support-card filters" th:action="@{/admin/announcement-deliveries}"
+          method="get">
+        <label for="status">Delivery status
+            <select id="status" name="status">
+                <option value="">All statuses</option>
+                <option th:each="option : ${statuses}"
+                        th:value="${option}"
+                        th:text="${option}"
+                        th:selected="${selectedStatus == option}">PENDING</option>
+            </select>
+        </label>
+        <button class="support-button" type="submit">Filter</button>
+    </form>
+
+    <section class="support-card">
+        <div class="table-scroll" th:if="${deliveries.totalElements > 0}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Recipient</th>
+                    <th>Type</th>
+                    <th>Announcement</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Last attempt</th>
+                    <th>Sent</th>
+                    <th>Delivery note</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="delivery : ${deliveries.content}">
+                    <td>
+                        <strong th:text="${delivery.recipientName}">Student</strong><br>
+                        <span th:text="${delivery.recipientEmail}">email</span>
+                    </td>
+                    <td>Admin announcement</td>
+                    <td th:text="${delivery.announcementTitle == null ? '—' : delivery.announcementTitle}">Title</td>
+                    <td th:text="${delivery.status}">PENDING</td>
+                    <td><time th:text="${#temporals.format(delivery.createdAt, 'dd MMM yyyy, HH:mm')}">Date</time></td>
+                    <td>
+                        <time th:if="${delivery.lastAttemptAt != null}"
+                              th:text="${#temporals.format(delivery.lastAttemptAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                        <span th:if="${delivery.lastAttemptAt == null}">—</span>
+                    </td>
+                    <td>
+                        <time th:if="${delivery.sentAt != null}"
+                              th:text="${#temporals.format(delivery.sentAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                        <span th:if="${delivery.sentAt == null}">—</span>
+                    </td>
+                    <td th:text="${delivery.failureReason == null ? '—' : delivery.failureReason}">—</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="muted" th:if="${deliveries.totalElements == 0}">
+            No deliveries match this filter.
+        </p>
+        <nav class="pagination" aria-label="Delivery pages"
+             th:if="${deliveries.totalPages > 1}">
+            <a class="support-button secondary"
+               th:if="${deliveries.hasPrevious()}"
+               th:href="@{/admin/announcement-deliveries(status=${selectedStatus},page=${deliveries.number - 1})}">
+                Newer
+            </a>
+            <span class="muted"
+                  th:text="${deliveries.number + 1 + ' / ' + deliveries.totalPages}">1 / 1</span>
+            <a class="support-button secondary"
+               th:if="${deliveries.hasNext()}"
+               th:href="@{/admin/announcement-deliveries(status=${selectedStatus},page=${deliveries.number + 1})}">
+                Older
+            </a>
+        </nav>
+    </section>
+</main>
+</body>
+</html>

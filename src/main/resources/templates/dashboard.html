@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Student Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <style>
+        .dashboard .sidebar {
+            overflow-y: auto;
+        }
+
+        .quizzy-logout-form {
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            z-index: 999999 !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0 !important;
+        }
+
+        .quizzy-logout-button {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            background: #dc3545 !important;
+            color: #ffffff !important;
+            border: 2px solid #dc3545 !important;
+            border-radius: 8px !important;
+            padding: 12px 24px !important;
+            min-height: 44px;
+            font-size: 16px !important;
+            font-weight: bold !important;
+            cursor: pointer !important;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .quizzy-logout-button:hover {
+            background: #bb2d3b !important;
+            border-color: #bb2d3b !important;
+        }
+
+        .upcoming-exam {
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #ffffff;
+            overflow-wrap: anywhere;
+        }
+
+        .upcoming-exam h4 {
+            margin: 0 0 12px;
+        }
+
+        .upcoming-exam p {
+            margin: 8px 0;
+        }
+
+        .upcoming-exam .exam-description {
+            margin-top: 12px;
+        }
+
+        .upcoming-empty {
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .history-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            text-align: left;
+            padding: 12px;
+        }
+
+        .scheduled-start-form {
+            margin-top: 16px;
+        }
+
+        .scheduled-start-button {
+            display: inline-block;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #ffffff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .scheduled-start-button:hover {
+            background: #1d4ed8;
+        }
+
+        .pending-result {
+            color: #a16207;
+            font-weight: bold;
+        }
+
+        .published-result {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .quizzy-logout-form {
+                top: 10px !important;
+                right: 10px !important;
+            }
+
+            .quizzy-logout-button {
+                padding: 10px 16px !important;
+                font-size: 14px !important;
+            }
+
+            .dashboard .topbar {
+                padding-top: 55px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="dashboard">
+
+    <aside class="sidebar">
+        <h1 class="brand">Quizzy.</h1>
+
+        <nav>
+            <a class="nav-link active" th:href="@{/dashboard}">Dashboard</a>
+            <a class="nav-link" href="#exams">Explore Exams</a>
+            <a class="nav-link" href="#progress">My Progress</a>
+            <a class="nav-link" href="#history">Exam History</a>
+            <a class="nav-link" th:href="@{/feedback}">Exam Feedback</a>
+            <a class="nav-link" th:href="@{/support}">Student Support</a>
+            <a class="nav-link" th:href="@{/profile}">My Profile</a>
+            <a class="nav-link" th:href="@{/notification-preferences}">
+                Notification Preferences
+            </a>
+            <a class="nav-link" th:href="@{/notifications}">
+                Notifications
+                <span class="badge"
+                      th:if="${unreadNotificationCount > 0}"
+                      th:text="${unreadNotificationCount}">0</span>
+            </a>
+            <a class="nav-link" href="#upcoming">Upcoming Exams</a>
+            <a class="nav-link" th:href="@{/exam-instructions}">Java Quiz</a>
+        </nav>
+    </aside>
+
+    <form class="quizzy-logout-form"
+          th:action="@{/logout}"
+          method="post">
+        <button type="submit" class="quizzy-logout-button">Logout</button>
+    </form>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h1>Student Dashboard</h1>
+                <p class="muted">
+                    Learn, practice, and track your progress.
+                </p>
+            </div>
+
+            <h1>
+                Welcome,
+                <span th:text="${studentName}">Student</span> 👋
+            </h1>
+        </header>
+
+        <section class="welcome">
+            <h2>Your next achievement starts here!</h2>
+            <p>
+                Choose a subject, practise your skills, and prepare for your exams.
+            </p>
+            <a class="btn" href="#exams">Explore Exams</a>
+        </section>
+
+        <!-- Student progress -->
+        <section class="stats" id="progress">
+
+            <div class="card">
+                <span class="muted">Available Subjects</span>
+                <span class="stat-number">05</span>
+            </div>
+
+            <div class="card">
+                <span class="muted">Completed Exams</span>
+                <span class="stat-number"
+                      th:text="${completedExams}">0</span>
+            </div>
+
+            <div class="card">
+                <span class="muted">Average Published Percentage</span>
+                <span class="stat-number"
+                      th:text="${averagePercentage + '%'}">0%</span>
+            </div>
+
+            <div class="card">
+                <span class="muted">Results Awaiting Publication</span>
+                <span class="stat-number"
+                      th:text="${pendingResultsCount}">0</span>
+            </div>
+
+        </section>
+
+        <!-- Available exams -->
+        <h2 class="section-title" id="exams">
+            Explore Examinations
+        </h2>
+
+        <section class="exam-grid">
+
+            <article class="card exam-card">
+                <div class="exam-icon">☕</div>
+                <h3>Java Programming</h3>
+                <p>Test your Java basics and programming knowledge.</p>
+                <a class="btn" th:href="@{/}">Start Java Quiz</a>
+            </article>
+
+            <article class="card exam-card">
+                <div class="exam-icon">🐍</div>
+                <h3>Python</h3>
+                <p>Practise Python syntax and programming concepts.</p>
+                <a class="btn" th:href="@{/exams/python}">Explore Python</a>
+            </article>
+
+            <article class="card exam-card">
+                <div class="exam-icon">🗄️</div>
+                <h3>SQL</h3>
+                <p>Practise queries, tables, and database concepts.</p>
+                <a class="btn" th:href="@{/exams/sql}">Explore SQL</a>
+            </article>
+
+            <article class="card exam-card">
+                <div class="exam-icon">🧠</div>
+                <h3>Aptitude</h3>
+                <p>Improve your logical reasoning and problem-solving.</p>
+                <a class="btn" th:href="@{/exams/aptitude}">
+                    Explore Aptitude
+                </a>
+            </article>
+
+            <article class="card exam-card">
+                <div class="exam-icon">📝</div>
+                <h3>Mock Tests</h3>
+                <p>Prepare with practice tests for upcoming exams.</p>
+                <a class="btn" th:href="@{/exams/mock-tests}">
+                    Start Mock Test
+                </a>
+            </article>
+
+        </section>
+
+        <!-- Upcoming exams scheduled by the admin -->
+        <h2 class="section-title" id="upcoming">Upcoming Exams</h2>
+
+        <section class="exam-grid">
+
+            <article class="card exam-card"
+                     th:if="${#lists.isEmpty(upcomingExams)}">
+
+                <div class="exam-icon">📅</div>
+                <h3>Upcoming Exams</h3>
+                <p class="muted upcoming-empty">
+                    No upcoming exams scheduled yet. Please check again later.
+                </p>
+
+            </article>
+
+            <article class="card exam-card"
+                     th:each="exam : ${upcomingExams}">
+
+                <div class="exam-icon">📅</div>
+
+                <h3 th:text="${exam.examName}">Exam Name</h3>
+
+                <p>
+                    <strong>Subject:</strong>
+                    <span th:text="${exam.subject}">Java</span>
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    <span th:text="${exam.examDate}">2026-12-01</span>
+                </p>
+
+                <p>
+                    <strong>Time:</strong>
+                    <span th:text="${exam.examTime}">10:00</span>
+                </p>
+
+                <p class="exam-description"
+                   th:if="${exam.description != null
+                           and !#strings.isEmpty(exam.description)}">
+
+                    <strong>Description:</strong>
+                    <span th:text="${exam.description}">Exam instructions</span>
+                </p>
+
+                <form class="scheduled-start-form"
+                      data-exam-start-form
+                      th:action="@{/scheduled-exams/{id}/start(id=${exam.id})}"
+                      method="post">
+
+                    <button type="submit" class="scheduled-start-button">
+                        Start Exam
+                    </button>
+                </form>
+
+            </article>
+
+        </section>
+
+        <!-- Saved exam history -->
+        <h2 class="section-title" id="history">My Exam History</h2>
+
+        <section class="card history-card">
+
+            <div th:if="${#lists.isEmpty(examHistory)}">
+                <p class="muted">
+                    You haven't completed any recorded exams yet.
+                    Take an exam to see your results here.
+                </p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(examHistory)}"
+                 class="history-table-wrap">
+
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Score / Status</th>
+                            <th>Percentage</th>
+                            <th>Exam Date</th>
+                            <th>Publication Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr th:each="result : ${examHistory}">
+
+                            <td th:text="${#strings.capitalize(result.subject)}">
+                                SQL
+                            </td>
+
+                            <!-- Reveal score only after publication -->
+                            <td>
+                                <span th:if="${result.published}">
+                                    <span th:text="${result.score}">5</span>
+                                    /
+                                    <span th:text="${result.totalQuestions}">5</span>
+                                </span>
+
+                                <span th:unless="${result.published}"
+                                      class="pending-result">
+                                    Pending publication
+                                </span>
+                            </td>
+
+                            <!-- Reveal percentage only after publication -->
+                            <td>
+                                <span th:if="${result.published}"
+                                      th:text="${result.percentage + '%'}">
+                                    100%
+                                </span>
+
+                                <span th:unless="${result.published}">—</span>
+                            </td>
+
+                            <td th:text="${#temporals.format(result.examDate, 'dd-MM-yyyy HH:mm')}">
+                                19-10-2026 18:28
+                            </td>
+
+                            <td>
+                                <span th:if="${result.published and result.publishedAt != null}"
+                                      th:text="${#temporals.format(result.publishedAt, 'dd-MM-yyyy HH:mm')}">
+                                    19-10-2026 18:28
+                                </span>
+                                <span th:unless="${result.published and result.publishedAt != null}">—</span>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+        <p class="muted">Quizzy Online Examination System</p>
+
+    </main>
+</div>
+<script th:src="@{/js/exam-monitoring.js}" defer></script>
+</body>
+</html>

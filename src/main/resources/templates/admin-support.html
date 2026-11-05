@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Support Inbox</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+</head>
+<body>
+<main class="support-page">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Quizzy administration</p>
+            <h1>Student support inbox</h1>
+            <p class="muted">Review incoming conversations and respond to students.</p>
+        </div>
+        <nav class="support-actions" aria-label="Admin support navigation">
+            <a class="support-button secondary" th:href="@{/admin/schedules}">Admin dashboard</a>
+        </nav>
+    </header>
+
+    <p class="notice error" th:if="${error}" th:text="${error}" role="alert"></p>
+
+    <form class="support-card filter-form" th:action="@{/admin/support}" method="get">
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">All statuses</option>
+                <option th:each="item : ${statuses}" th:value="${item}"
+                        th:selected="${selectedStatus == item}"
+                        th:text="${#strings.replace(item.name(), '_', ' ')}">Status</option>
+            </select>
+        </div>
+        <div>
+            <label for="category">Category</label>
+            <select id="category" name="category">
+                <option value="">All categories</option>
+                <option th:each="item : ${categories}" th:value="${item}"
+                        th:selected="${selectedCategory == item}"
+                        th:text="${#strings.replace(item.name(), '_', ' ')}">Category</option>
+            </select>
+        </div>
+        <div class="support-actions">
+            <button class="support-button" type="submit">Apply filters</button>
+            <a class="support-button secondary" th:href="@{/admin/support}">Clear</a>
+        </div>
+    </form>
+
+    <section class="support-card empty-state" th:if="${#lists.isEmpty(conversations)}">
+        <h2>No conversations found</h2>
+        <p>New student requests will appear in this inbox.</p>
+    </section>
+
+    <section class="conversation-list" aria-label="Support conversations"
+             th:if="${!#lists.isEmpty(conversations)}">
+        <article class="support-card conversation-row" th:each="entry : ${conversations}">
+            <div class="conversation-main">
+                <h2>
+                    <a th:href="@{/admin/support/{id}(id=${entry.id})}"
+                       th:text="${entry.subject}">Conversation subject</a>
+                </h2>
+                <p class="muted">
+                    <span th:text="${entry.studentName}">Student</span>
+                    <span aria-hidden="true">·</span>
+                    <span th:text="${entry.studentEmail}">student@example.com</span>
+                </p>
+                <p class="conversation-meta">
+                    <span th:text="${#strings.replace(entry.category.name(), '_', ' ')}">Category</span>
+                    <span aria-hidden="true">·</span>
+                    <span class="badge"
+                          th:text="${#strings.replace(entry.status.name(), '_', ' ')}">Status</span>
+                </p>
+                <p class="muted">
+                    Last activity:
+                    <time th:text="${#temporals.format(entry.lastMessageAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                </p>
+            </div>
+            <div class="conversation-indicators">
+                <span class="badge unread" th:if="${entry.hasUnreadMessages}">
+                    Unread student message
+                </span>
+                <span class="badge attention"
+                      th:if="${entry.status.name() == 'OPEN' or entry.status.name() == 'IN_PROGRESS'}">
+                    Awaiting admin action
+                </span>
+            </div>
+            <a class="support-button secondary"
+               th:href="@{/admin/support/{id}(id=${entry.id})}">Review</a>
+        </article>
+    </section>
+</main>
+</body>
+</html>

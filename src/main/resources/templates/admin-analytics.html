@@ -1,0 +1,655 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy - Results Analytics</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #263449;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 20px 6%;
+            background: #172b4d;
+            color: white;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions a,
+        .header-actions button {
+            display: inline-block;
+            padding: 10px 14px;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .nav-button {
+            background: #2457a7;
+        }
+
+        .logout-button {
+            background: transparent;
+            border-color: white !important;
+        }
+
+        .header-actions a:hover,
+        .header-actions button:hover {
+            opacity: 0.88;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        main {
+            width: 92%;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .intro {
+            margin-bottom: 24px;
+        }
+
+        .intro h2 {
+            margin-bottom: 8px;
+            color: #172b4d;
+        }
+
+        .intro p {
+            margin: 0;
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            padding: 24px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 3px 14px rgba(23, 43, 77, 0.06);
+        }
+
+        .card-label {
+            margin-bottom: 14px;
+            color: #718096;
+            font-size: 15px;
+        }
+
+        .card-value {
+            margin-bottom: 10px;
+            color: #172b4d;
+            font-size: 34px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .card-description {
+            color: #718096;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .students {
+            border-top: 4px solid #2457a7;
+        }
+
+        .attempts {
+            border-top: 4px solid #0f9d91;
+        }
+
+        .average {
+            border-top: 4px solid #d6a64f;
+        }
+
+        .passfail {
+            border-top: 4px solid #218653;
+        }
+
+        .pass-fail-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .pass-count,
+        .fail-count {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .pass-count {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .fail-count {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .note {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 8px;
+            background: #eaf2ff;
+            color: #1b448d;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .empty-note {
+            margin-top: 18px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .analytics-card {
+            margin-top: 28px;
+            padding: 24px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 3px 14px rgba(23, 43, 77, 0.06);
+        }
+
+        .analytics-card h2 {
+            margin-top: 0;
+            color: #172b4d;
+        }
+
+        .section-description {
+            margin-bottom: 20px;
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .subject-table,
+        .student-table,
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .subject-table {
+            min-width: 600px;
+        }
+
+        .student-table {
+            min-width: 1100px;
+        }
+
+        .history-table {
+            min-width: 850px;
+        }
+
+        .subject-table th,
+        .subject-table td,
+        .student-table th,
+        .student-table td,
+        .history-table th,
+        .history-table td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .subject-table th,
+        .student-table th,
+        .history-table th {
+            background: #eef4ff;
+            color: #172b4d;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .subject-table tbody tr:hover,
+        .student-table tbody tr:hover,
+        .history-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .subject-name,
+        .student-name {
+            font-weight: bold;
+            color: #172b4d;
+        }
+
+        .student-email {
+            color: #718096;
+            overflow-wrap: anywhere;
+        }
+
+        .average-score,
+        .student-average {
+            font-weight: bold;
+            color: #2457a7;
+        }
+
+        .passed-count {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .failed-count {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .score-value {
+            color: #172b4d;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            padding: 22px !important;
+            text-align: center !important;
+            color: #718096;
+        }
+
+        .report-button {
+            display: inline-block;
+            padding: 9px 12px;
+            background: #2457a7;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .report-button:hover {
+            background: #1b448d;
+        }
+
+        @media (max-width: 650px) {
+            header {
+                padding: 18px 4%;
+            }
+
+            header h1 {
+                font-size: 21px;
+            }
+
+            main {
+                width: 92%;
+                margin: 22px auto;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card,
+            .analytics-card {
+                padding: 20px;
+            }
+
+            .card-value {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Quizzy Analytics Dashboard</h1>
+
+    <div class="header-actions">
+        <a th:href="@{/admin/schedules}" class="nav-button">
+            Manage Exams
+        </a>
+
+        <a th:href="@{/admin/questions}" class="nav-button">
+            Question Bank
+        </a>
+
+        <a th:href="@{/admin/results}" class="nav-button">
+            Student Results
+        </a>
+
+        <a th:href="@{/admin/support}" class="nav-button">
+            Student Support Inbox
+        </a>
+
+        <form class="logout-form"
+              th:action="@{/admin/logout}"
+              method="post">
+            <button type="submit" class="logout-button">
+                Logout
+            </button>
+        </form>
+    </div>
+</header>
+
+<main>
+
+    <!-- Overall Results Overview -->
+    <section class="intro">
+        <h2>Results Overview</h2>
+        <p>
+            Review registered students, exam attempts,
+            average performance, and pass/fail statistics.
+        </p>
+    </section>
+
+    <section class="cards">
+
+        <article class="card students">
+            <div class="card-label">Total Students</div>
+            <div class="card-value"
+                 th:text="${totalStudents}">0</div>
+            <div class="card-description">
+                Total registered student accounts.
+            </div>
+        </article>
+
+        <article class="card attempts">
+            <div class="card-label">Total Exam Attempts</div>
+            <div class="card-value"
+                 th:text="${totalAttempts}">0</div>
+            <div class="card-description">
+                Total saved exam-result records, including repeat attempts.
+            </div>
+        </article>
+
+        <article class="card average">
+            <div class="card-label">Average Score</div>
+            <div class="card-value">
+                <span th:text="${#numbers.formatDecimal(averagePercentage, 1, 2)}">0.00</span>%
+            </div>
+            <div class="card-description">
+                Average percentage across all saved exam attempts.
+            </div>
+        </article>
+
+        <article class="card passfail">
+            <div class="card-label">Pass / Fail Statistics</div>
+            <div class="card-value"
+                 th:text="${totalAttempts}">0</div>
+
+            <div class="pass-fail-details">
+                <span class="pass-count">
+                    Passed:
+                    <span th:text="${passedAttempts}">0</span>
+                </span>
+
+                <span class="fail-count">
+                    Failed:
+                    <span th:text="${failedAttempts}">0</span>
+                </span>
+            </div>
+
+            <div class="card-description" style="margin-top: 14px;">
+                Pass mark:
+                <strong th:text="${passMark}">40</strong>%
+                or higher.
+            </div>
+        </article>
+
+    </section>
+
+    <div class="note">
+        <strong>About these statistics:</strong>
+        Results are calculated from saved exam attempts in the existing
+        database. Pass/fail classification uses a
+        <span th:text="${passMark}">40</span>% threshold.
+        Each repeat attempt is counted separately.
+    </div>
+
+    <p class="empty-note" th:if="${totalAttempts == 0}">
+        No exam attempts have been recorded yet. Statistics will appear
+        after students complete exams.
+    </p>
+
+    <!-- Subject-wise Performance -->
+    <section class="analytics-card">
+
+        <h2>Subject-wise Performance</h2>
+
+        <p class="section-description">
+            Compare the average score, total attempts, and pass/fail
+            counts for every subject with saved exam results.
+        </p>
+
+        <div class="table-container">
+            <table class="subject-table">
+                <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Total Attempts</th>
+                    <th>Average Score</th>
+                    <th>Passed</th>
+                    <th>Failed</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="item : ${subjectStats}">
+                    <td class="subject-name"
+                        th:text="${item.subject}">Java</td>
+
+                    <td th:text="${item.attempts}">0</td>
+
+                    <td class="average-score">
+                        <span th:text="${#numbers.formatDecimal(item.averagePercentage, 1, 2)}">0.00</span>%
+                    </td>
+
+                    <td class="passed-count"
+                        th:text="${item.passed}">0</td>
+
+                    <td class="failed-count"
+                        th:text="${item.failed}">0</td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(subjectStats)}">
+                    <td colspan="5" class="empty-state">
+                        No subject-wise results are available yet.
+                        Complete an exam to see its statistics here.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <!-- Individual Student Performance -->
+    <section class="analytics-card">
+
+        <h2>Individual Student Performance</h2>
+
+        <p class="section-description">
+            View each registered student's exam attempts,
+            average percentage, and pass/fail statistics.
+            Click View Full Performance to open an individual report.
+        </p>
+
+        <div class="table-container">
+            <table class="student-table">
+                <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>Attempts</th>
+                    <th>Average Score</th>
+                    <th>Passed</th>
+                    <th>Failed</th>
+                    <th>Detailed Report</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="student : ${studentStats}">
+                    <td th:text="${student.studentId}">1</td>
+
+                    <td class="student-name"
+                        th:text="${student.studentName}">
+                        Student Name
+                    </td>
+
+                    <td class="student-email"
+                        th:text="${student.email}">
+                        student@example.com
+                    </td>
+
+                    <td th:text="${student.attempts}">0</td>
+
+                    <td class="student-average">
+                        <span th:text="${#numbers.formatDecimal(student.averagePercentage, 1, 2)}">0.00</span>%
+                    </td>
+
+                    <td class="passed-count"
+                        th:text="${student.passed}">0</td>
+
+                    <td class="failed-count"
+                        th:text="${student.failed}">0</td>
+
+                    <td>
+                        <a class="report-button"
+                           th:href="@{/admin/analytics/student/{studentId}(studentId=${student.studentId})}">
+                            View Full Performance
+                        </a>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(studentStats)}">
+                    <td colspan="8" class="empty-state">
+                        No registered students found.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <!-- Individual Student Exam History -->
+    <section class="analytics-card">
+
+        <h2>Individual Exam History</h2>
+
+        <p class="section-description">
+            View every saved exam attempt with the student's details,
+            marks obtained, percentage, and exam date.
+            Repeat attempts are displayed separately.
+        </p>
+
+        <div class="table-container">
+            <table class="history-table">
+                <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Subject</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th>Result</th>
+                    <th>Exam Date</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="exam : ${studentExamHistory}">
+                    <td th:text="${exam.studentId}">1</td>
+
+                    <td class="student-name"
+                        th:text="${exam.studentName}">
+                        Student Name
+                    </td>
+
+                    <td th:text="${exam.subject}">Java</td>
+
+                    <td class="score-value">
+                        <span th:text="${exam.score}">0</span>
+                        /
+                        <span th:text="${exam.totalQuestions}">0</span>
+                    </td>
+
+                    <td class="student-average">
+                        <span th:text="${exam.percentage}">0</span>%
+                    </td>
+
+                    <td>
+                        <span th:if="${exam.percentage >= passMark}"
+                              class="pass-count">PASS</span>
+
+                        <span th:unless="${exam.percentage >= passMark}"
+                              class="fail-count">FAIL</span>
+                    </td>
+
+                    <td>
+                        <span th:if="${exam.examDate != null}"
+                              th:text="${#temporals.format(exam.examDate, 'dd-MM-yyyy HH:mm')}">
+                            22-10-2026 11:30
+                        </span>
+                        <span th:if="${exam.examDate == null}">
+                            Not available
+                        </span>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(studentExamHistory)}">
+                    <td colspan="7" class="empty-state">
+                        No exam history is available yet.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>

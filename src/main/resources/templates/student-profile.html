@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Student Profile</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+    <style>
+        .profile-page { max-width: 700px; }
+        .profile-form label { margin-top: 8px; }
+    </style>
+</head>
+<body>
+<main class="support-page profile-page">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Account settings</p>
+            <h1>Your profile</h1>
+            <p class="muted">Review and update your account details.</p>
+        </div>
+        <a class="support-button secondary" th:href="@{/dashboard}">Back to dashboard</a>
+    </header>
+
+    <p class="notice success" th:if="${success}" th:text="${success}" role="status"></p>
+    <p class="notice error" th:if="${error}" th:text="${error}" role="alert"></p>
+
+    <form class="support-card support-form profile-form"
+          th:action="@{/profile}" method="post">
+        <label for="fullName">Full name</label>
+        <input id="fullName" name="fullName" type="text"
+               th:value="${fullName}" maxlength="100"
+               autocomplete="name" required>
+
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email"
+               th:value="${email}" maxlength="254"
+               autocomplete="email" required>
+
+        <p class="muted">Your password and password hash are never displayed here.</p>
+        <button class="support-button" type="submit">Save profile</button>
+    </form>
+</main>
+</body>
+</html>

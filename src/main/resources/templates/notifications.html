@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Notifications</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+    <style>
+        .notification-card { border-left: 5px solid #cbd0df; }
+        .notification-card.unread { border-left-color: #5b5ce2; background: #f7f7ff; }
+        .notification-heading { display: flex; justify-content: space-between; gap: 12px; }
+        .notification-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .notification-actions form { margin: 0; }
+        .pagination { display: flex; gap: 12px; justify-content: center; margin: 20px 0; }
+    </style>
+</head>
+<body>
+<main class="support-page">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Quizzy updates</p>
+            <h1>Notifications <span class="badge" th:text="${unreadCount}">0</span></h1>
+            <p class="muted">Your latest results, support replies, and announcements.</p>
+        </div>
+        <nav class="support-actions" aria-label="Notification navigation">
+            <a class="support-button secondary" th:href="@{/dashboard}">Dashboard</a>
+            <a class="support-button secondary" th:href="@{/notification-preferences}">Preferences</a>
+            <form th:if="${unreadCount > 0}" th:action="@{/notifications/read-all}" method="post">
+                <button class="support-button" type="submit">Mark all as read</button>
+            </form>
+        </nav>
+    </header>
+
+    <section class="support-card empty-state" th:if="${#lists.isEmpty(notifications)}">
+        <h2>You’re all caught up</h2>
+        <p>New notifications will appear here.</p>
+    </section>
+
+    <section aria-label="Your notifications" th:if="${!#lists.isEmpty(notifications)}">
+        <article class="support-card notification-card"
+                 th:each="entry : ${notifications}"
+                 th:classappend="${!entry.notification.read} ? ' unread'">
+            <div class="notification-heading">
+                <h2 th:text="${entry.notification.title}">Notification title</h2>
+                <span class="badge"
+                      th:text="${#strings.replace(entry.notification.notificationType.name(), '_', ' ')}">Type</span>
+            </div>
+            <p class="message-content" th:text="${entry.notification.message}">Notification message</p>
+            <p class="muted">
+                <time th:text="${#temporals.format(entry.notification.createdAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                <span th:if="${entry.notification.read}">· Read</span>
+                <span th:unless="${entry.notification.read}">· Unread</span>
+            </p>
+            <div class="notification-actions">
+                <a class="support-button secondary"
+                   th:if="${entry.safeTargetUrl != null}"
+                   th:href="${entry.safeTargetUrl}">Open related page</a>
+                <form th:if="${!entry.notification.read}"
+                      th:action="@{/notifications/{id}/read(id=${entry.notification.id})}"
+                      method="post">
+                    <button class="support-button" type="submit">Mark as read</button>
+                </form>
+                <form th:if="${entry.notification.read}"
+                      th:action="@{/notifications/{id}/unread(id=${entry.notification.id})}"
+                      method="post">
+                    <button class="support-button secondary" type="submit">Mark as unread</button>
+                </form>
+            </div>
+        </article>
+    </section>
+
+    <nav class="pagination" aria-label="Notification pages" th:if="${totalPages > 1}">
+        <a class="support-button secondary" th:if="${currentPage > 0}"
+           th:href="@{/notifications(page=${currentPage - 1})}">Newer</a>
+        <span class="muted" th:text="${currentPage + 1 + ' / ' + totalPages}">1 / 1</span>
+        <a class="support-button secondary" th:if="${currentPage + 1 < totalPages}"
+           th:href="@{/notifications(page=${currentPage + 1})}">Older</a>
+    </nav>
+</main>
+</body>
+</html>

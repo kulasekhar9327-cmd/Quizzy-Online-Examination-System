@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam attempt disqualified | Quizzy</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+<main class="container">
+    <h1>Exam attempt disqualified</h1>
+    <p th:text="${message}">
+        This attempt was disqualified after reaching the monitoring warning limit.
+    </p>
+    <p>Browser events are observations and are not proof of misconduct.</p>
+    <a class="btn" th:href="@{/dashboard}">Return to dashboard</a>
+</main>
+</body>
+</html>

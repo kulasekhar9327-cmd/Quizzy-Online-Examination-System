@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Feedback | Quizzy Admin</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+<main class="page">
+    <h1>Student examination feedback</h1>
+    <nav aria-label="Admin navigation">
+        <a th:href="@{/admin/results}">Results</a>
+        <a th:href="@{/admin/schedules}">Schedules</a>
+        <a th:href="@{/admin/support}">Student Support Inbox</a>
+    </nav>
+    <p th:if="${errorMessage}" th:text="${errorMessage}" role="alert"></p>
+
+    <form th:action="@{/admin/feedback}" method="get">
+        <label for="search">Search student or subject</label>
+        <input id="search" name="search" type="search"
+               th:value="${search}" maxlength="200">
+        <label for="fromDate">Submitted from</label>
+        <input id="fromDate" name="fromDate" type="date" th:value="${fromDate}">
+        <label for="toDate">Submitted to</label>
+        <input id="toDate" name="toDate" type="date" th:value="${toDate}">
+        <button type="submit">Filter</button>
+        <a th:href="@{/admin/feedback}">Clear</a>
+    </form>
+
+    <section aria-label="Feedback summary">
+        <p>Submissions: <strong th:text="${feedbackCount}">0</strong></p>
+        <p>Average overall rating:
+            <strong th:text="${#numbers.formatDecimal(averageRating, 1, 2)}">0.00</strong>/5
+        </p>
+        <p>Average difficulty rating:
+            <strong th:text="${#numbers.formatDecimal(averageDifficulty, 1, 2)}">0.00</strong>/5
+        </p>
+        <p>Average question quality rating:
+            <strong th:text="${#numbers.formatDecimal(averageQuality, 1, 2)}">0.00</strong>/5
+        </p>
+        <p>Average examination experience rating:
+            <strong th:text="${#numbers.formatDecimal(averageExperience, 1, 2)}">0.00</strong>/5
+        </p>
+        <p>Low overall ratings (2 or below):
+            <strong th:text="${lowRatingCount}">0</strong>
+        </p>
+    </section>
+
+    <section th:if="${#lists.isEmpty(feedback)}">
+        <p>No feedback matches these filters.</p>
+    </section>
+
+    <section th:each="entry : ${feedback}">
+        <article class="card" style="margin: 16px 0; padding: 18px;">
+            <h2 th:text="${entry.subject}">Subject</h2>
+            <p>Student: <span th:text="${entry.studentName}">Student</span></p>
+            <p>Overall: <span th:text="${entry.overallRating}">5</span>/5</p>
+            <p>Difficulty: <span th:text="${entry.difficultyRating}">3</span>/5</p>
+            <p>Question quality: <span th:text="${entry.qualityRating}">4</span>/5</p>
+            <p>Experience: <span th:text="${entry.experienceRating}">5</span>/5</p>
+            <p>Exam date:
+                <span th:text="${entry.examDate != null
+                    ? #temporals.format(entry.examDate, 'dd MMM yyyy, HH:mm')
+                    : '—'}">—</span>
+            </p>
+            <p>Submitted:
+                <span th:text="${entry.submittedAt != null
+                    ? #temporals.format(entry.submittedAt, 'dd MMM yyyy, HH:mm')
+                    : '—'}">—</span>
+            </p>
+            <p th:if="${entry.comment != null}">
+                <strong>Comment:</strong>
+                <span th:text="${entry.comment}">Comment</span>
+            </p>
+        </article>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<section class="exam-security-panel"
+         th:fragment="panel"
+         data-exam-monitor
+         aria-labelledby="exam-security-title">
+    <div class="exam-security-heading">
+        <div>
+            <h2 id="exam-security-title">Exam security</h2>
+            <p data-monitoring-status role="status">
+                Browser events are observations and require server confirmation.
+            </p>
+        </div>
+        <span class="exam-security-badge">Monitoring on</span>
+    </div>
+
+    <div class="exam-security-status">
+        <p>
+            Server-confirmed warnings:
+            <strong data-warning-count aria-live="polite">0</strong>
+            /
+            <strong data-warning-limit>5</strong>
+            <span> · Fullscreen: <strong data-fullscreen-status>Not active</strong></span>
+        </p>
+        <p data-pending-warning-status aria-live="polite" hidden>
+            Pending events:
+            <strong data-pending-warning-count>0</strong>
+            — not yet confirmed by the server.
+        </p>
+        <button type="button" class="exam-fullscreen-button"
+                data-fullscreen-button>
+            Enter fullscreen
+        </button>
+    </div>
+
+    <p class="exam-security-message"
+       data-warning-message
+       role="status"
+       aria-live="polite">
+        Keep this exam page visible and focused. Browser alerts are shown here.
+    </p>
+    <p class="exam-security-note">
+        This page observes tab visibility, window focus, fullscreen exits,
+        and copy, cut, or paste actions in the exam area. The server counts
+        accepted unique violations; pending events are not confirmed warnings.
+        Reaching five accepted unique violations disqualifies this exam
+        attempt. The server determines the final warning count and status.
+        Browser events are observations and are not conclusive proof of cheating
+        or misconduct.
+        These browser-side controls are deterrents; they cannot prevent
+        screenshots, external cameras, developer tools, or every copying method.
+        Clipboard contents and webcam data are not collected.
+    </p>
+</section>

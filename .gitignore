@@ -1,0 +1,110 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# Quizzy database and database logs
+/data/
+*.mv.db
+*.trace.db
+*.trace-*.db
+
+# Quizzy project backups
+/Quizzy-*/
+/backup-*/
+
+# Local application configuration and credentials
+src/main/resources/application*.properties
+src/main/resources/application*.yml
+src/main/resources/application*.yaml
+
+# Allow a sanitized example configuration later
+!src/main/resources/application-example.properties
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+
+# Temporary and accidental backup files
+*.bak
+*.accidental-*
+
+# Build and runtime files
+target/
+logs/
+*.log
+
+# Phase 6 local safety backup
+/.gitignore.phase6-backup
+
+# Old temporary project copies
+/ExamController-before-question-bank.java
+/admin-schedules-before-question-link.html
+/PATHHERE
+
+# All local application configuration files, including test configuration
+**/application*.properties
+**/application*.yml
+**/application*.yaml
+
+# Recovery copies and old source backups
+*.backup
+*.backup*
+*.before-*
+*.recovery-*
+*.copy
+*.broken-backup*
+*.phase*-backup-*
+*.backup.txt
+
+# Machine-specific local templates
+*LAPTOP-U33E00KA*
+
+# Local backup template - do not upload
+/src/main/resources/templates/exam-result-backup.txt
+
+# Deferred Phase 4 migration files - keep local for now
+/scripts/phase4-production-migration-runbook-draft.ps1
+/scripts/migrations/V4_5_4__add_exam_monitoring_tables.sql
+
+# Incomplete recovery marker - not for public use
+/scripts/phase4-production-migration-runbook.ps1
+
+# Internal Phase 4 migration and recovery documentation
+/scripts/PHASE4-CHECKLIST.md
+/scripts/PHASE4-PRODUCTION-MIGRATION-RUNBOOK.md

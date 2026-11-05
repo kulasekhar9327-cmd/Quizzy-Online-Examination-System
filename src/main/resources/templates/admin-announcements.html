@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzy | Admin Announcements</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/support.css}">
+</head>
+<body>
+<main class="support-page narrow">
+    <header class="support-header">
+        <div>
+            <p class="eyebrow">Quizzy administration</p>
+            <h1>Student announcements</h1>
+            <p class="muted">Create an in-app notification and an individual email for all students or selected students.</p>
+        </div>
+        <a class="support-button secondary" th:href="@{/admin/dashboard}">Admin dashboard</a>
+        <a class="support-button secondary" th:href="@{/admin/announcement-deliveries}">Delivery tracking</a>
+    </header>
+
+    <p class="notice success" th:if="${success}" th:text="${success}" role="status"></p>
+    <p class="notice error" th:if="${error}" th:text="${error}" role="alert"></p>
+
+    <form class="support-card support-form"
+          th:action="@{/admin/announcements}" method="post"
+          onsubmit="return confirmAnnouncement()">
+        <input type="hidden" name="requestId" th:value="${requestId}">
+        <label for="title">Title</label>
+        <input id="title" name="title" maxlength="120" required>
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" maxlength="1000"
+                  rows="6" required></textarea>
+
+        <label for="recipient">Recipient</label>
+        <select id="recipient" name="recipient" required>
+            <option value="all">All students</option>
+            <option value="selected">Selected students</option>
+        </select>
+
+        <label for="recipientIds">Students (use Ctrl/Command to select more than one)</label>
+        <select id="recipientIds" name="recipientIds" multiple size="6">
+            <option th:each="student : ${students}"
+                    th:value="${student.id}"
+                    th:text="${student.fullName + ' (ID ' + student.id + ')'}">
+                Student
+            </option>
+        </select>
+
+        <p class="muted">
+            Email is sent separately to each selected address. A repeated request
+            does not resend emails already claimed or completed.
+        </p>
+        <button class="support-button" type="submit">Create and send announcement</button>
+    </form>
+
+    <section class="support-card" th:if="${!#lists.isEmpty(deliveryHistory)}">
+        <h2>Email delivery tracking</h2>
+        <p class="muted">
+            SENT means the email service confirmed the send call. FAILED deliveries
+            are not automatically retried; SENDING/PENDING deliveries remain protected
+            from duplicate sends on repeated requests.
+        </p>
+        <article class="message" th:each="request : ${deliveryHistory}">
+            <h3>Announcement request <span th:text="${request.requestId}">request ID</span></h3>
+            <p class="muted">
+                Created:
+                <time th:text="${#temporals.format(request.createdAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+            </p>
+            <div style="overflow-x:auto">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Status</th>
+                        <th>Last attempt</th>
+                        <th>Sent at</th>
+                        <th>Delivery note</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="delivery : ${request.deliveries}">
+                        <td th:text="${delivery.studentId}">0</td>
+                        <td th:text="${delivery.status}">PENDING</td>
+                        <td>
+                            <time th:if="${delivery.lastAttemptAt != null}"
+                                  th:text="${#temporals.format(delivery.lastAttemptAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                            <span th:if="${delivery.lastAttemptAt == null}">—</span>
+                        </td>
+                        <td>
+                            <time th:if="${delivery.sentAt != null}"
+                                  th:text="${#temporals.format(delivery.sentAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                            <span th:if="${delivery.sentAt == null}">—</span>
+                        </td>
+                        <td th:text="${delivery.failureReason == null ? '—' : delivery.failureReason}">—</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+
+    <section class="support-card">
+        <h2>Recent announcement activity</h2>
+        <p class="muted" th:if="${#lists.isEmpty(announcementHistory)}">
+            No announcements have been created.
+        </p>
+        <article class="message" th:each="entry : ${announcementHistory}">
+            <h3 th:text="${entry.title}">Announcement</h3>
+            <p class="message-content" th:text="${entry.message}">Message</p>
+            <p class="muted">
+                Created:
+                <time th:text="${#temporals.format(entry.createdAt, 'dd MMM yyyy, HH:mm')}">Date</time>
+                · Recipients: <span th:text="${entry.recipientCount}">0</span>
+            </p>
+        </article>
+    </section>
+</main>
+<script>
+    function confirmAnnouncement() {
+        const mode = document.getElementById('recipient').value;
+        const selected = document.getElementById('recipientIds').selectedOptions.length;
+        if (mode === 'selected' && selected === 0) {
+            alert('Select at least one student.');
+            return false;
+        }
+        const audience = mode === 'all'
+            ? 'all students'
+            : `${selected} selected student(s)`;
+        return confirm(
+            `Send this announcement by email and in-app notification to ${audience}?`);
+    }
+
+    document.getElementById('recipient').addEventListener('change', function () {
+        const selected = this.value === 'selected';
+        const field = document.getElementById('recipientIds');
+        field.required = selected;
+        field.disabled = !selected;
+    });
+    document.getElementById('recipient').dispatchEvent(new Event('change'));
+</script>
+</body>
+</html>
