@@ -21,16 +21,16 @@ public class Question {
     @Column(name = "question_text", nullable = false, length = 1000)
     private String questionText;
 
-    @Column(name = "option_a", nullable = false, length = 300)
+    @Column(name = "OPTIONA", nullable = false, length = 300)
     private String optionA;
 
-    @Column(name = "option_b", nullable = false, length = 300)
+    @Column(name = "OPTIONB", nullable = false, length = 300)
     private String optionB;
 
-    @Column(name = "option_c", nullable = false, length = 300)
+    @Column(name = "OPTIONC", nullable = false, length = 300)
     private String optionC;
 
-    @Column(name = "option_d", nullable = false, length = 300)
+    @Column(name = "OPTIOND", nullable = false, length = 300)
     private String optionD;
 
     @Column(name = "correct_answer", nullable = false, length = 300)

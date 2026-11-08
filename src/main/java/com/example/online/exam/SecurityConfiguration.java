@@ -1,9 +1,11 @@
+
 package com.example.online.exam;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +27,7 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain applicationSecurityFilterChain(HttpSecurity http)
             throws Exception {
+
         HttpSessionCsrfTokenRepository csrfTokenRepository =
                 new HttpSessionCsrfTokenRepository();
 
@@ -32,12 +35,15 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().permitAll())
                 .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
                         .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(
                                 new XorCsrfTokenRequestAttributeHandler()))
                 .addFilterBefore(
                         new SameOriginRequestFilter(),
                         CsrfFilter.class)
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin()))
                 .build();
     }
 
@@ -45,18 +51,26 @@ public class SecurityConfiguration {
             extends OncePerRequestFilter {
 
         @Override
+        protected boolean shouldNotFilter(HttpServletRequest request) {
+            return request.getServletPath().startsWith("/h2-console");
+        }
+
+        @Override
         protected void doFilterInternal(
                 HttpServletRequest request,
                 HttpServletResponse response,
                 FilterChain filterChain)
                 throws ServletException, IOException {
+
             if (isUnsafeMethod(request.getMethod())
                     && !hasSameOrigin(request)) {
+
                 response.sendError(
                         HttpServletResponse.SC_FORBIDDEN,
                         "Cross-origin state-changing request rejected.");
                 return;
             }
+
             filterChain.doFilter(request, response);
         }
 
@@ -67,34 +81,42 @@ public class SecurityConfiguration {
 
         private boolean hasSameOrigin(HttpServletRequest request) {
             List<String> origins = new ArrayList<>();
+
             String origin = request.getHeader("Origin");
             String referer = request.getHeader("Referer");
+
             if (origin != null && !origin.isBlank()) {
                 origins.add(origin);
             }
+
             if (referer != null && !referer.isBlank()) {
                 origins.add(referer);
             }
 
             for (String value : origins) {
                 URI uri;
+
                 try {
                     uri = URI.create(value);
                 } catch (IllegalArgumentException exception) {
                     return false;
                 }
+
                 if (!sameOrigin(uri, request)) {
                     return false;
                 }
             }
+
             return true;
         }
 
         private boolean sameOrigin(
                 URI source,
                 HttpServletRequest request) {
+
             String scheme = source.getScheme();
             String host = source.getHost();
+
             if (scheme == null || host == null
                     || source.getUserInfo() != null
                     || !scheme.equalsIgnoreCase(request.getScheme())
@@ -105,9 +127,11 @@ public class SecurityConfiguration {
             int sourcePort = source.getPort() < 0
                     ? defaultPort(scheme)
                     : source.getPort();
+
             int requestPort = request.getServerPort() < 0
                     ? defaultPort(request.getScheme())
                     : request.getServerPort();
+
             return sourcePort == requestPort;
         }
 

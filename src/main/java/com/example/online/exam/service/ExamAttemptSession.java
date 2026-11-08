@@ -1,3 +1,4 @@
+
 package com.example.online.exam.service;
 
 import jakarta.servlet.http.HttpSession;
@@ -160,6 +161,11 @@ public final class ExamAttemptSession {
     }
 
     public static Long studentId(HttpSession session) {
+        // A session may not exist for an anonymous request.
+        if (session == null) {
+            return null;
+        }
+
         Object value = session.getAttribute("studentId");
         if (value == null) {
             return null;

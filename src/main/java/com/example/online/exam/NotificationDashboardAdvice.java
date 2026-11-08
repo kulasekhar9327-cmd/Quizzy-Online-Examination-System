@@ -4,9 +4,9 @@ import com.example.online.exam.service.ExamAttemptSession;
 import com.example.online.exam.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.ui.Model;
 
 @ControllerAdvice
 public class NotificationDashboardAdvice {
@@ -21,15 +21,26 @@ public class NotificationDashboardAdvice {
     public void addDashboardNotificationCount(
             HttpServletRequest request,
             Model model) {
+
         if (!"/dashboard".equals(request.getServletPath())) {
             return;
         }
+
         HttpSession session = request.getSession(false);
-        Long studentId = ExamAttemptSession.studentId(session);
-        if (studentId != null) {
-            model.addAttribute(
-                    "unreadNotificationCount",
-                    notificationService.unreadCount(studentId));
+
+        // Do not process notifications without an existing session.
+        if (session == null) {
+            return;
         }
+
+        Long studentId = ExamAttemptSession.studentId(session);
+
+        if (studentId == null) {
+            return;
+        }
+
+        model.addAttribute(
+                "unreadNotificationCount",
+                notificationService.unreadCount(studentId));
     }
 }
