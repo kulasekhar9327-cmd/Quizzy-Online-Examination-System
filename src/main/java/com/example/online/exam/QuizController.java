@@ -210,12 +210,43 @@ public class QuizController {
         return "redirect:/";
     }
 
-    // Display the active Java exam using the same selected questions on refresh.
+    // Show the public homepage to visitors and preserve any active Java exam.
     @GetMapping("/")
     public String showQuiz(HttpSession session, Model model) {
 
         if (ExamAttemptSession.studentId(session) == null) {
-            return "redirect:/login";
+            LocalDateTime now = LocalDateTime.now();
+            LocalDate today = now.toLocalDate();
+            List<HomepageSchedule> homepageSchedules = new ArrayList<>();
+
+            List<ExamSchedule> schedules = examScheduleRepository
+                    .findByExamDateGreaterThanEqualOrderByExamDateAscExamTimeAsc(
+                            today);
+            for (ExamSchedule schedule : schedules) {
+                String status = "Scheduled";
+                if (schedule.getExamDate() != null
+                        && schedule.getExamTime() != null) {
+                    LocalDateTime startsAt = LocalDateTime.of(
+                            schedule.getExamDate(),
+                            schedule.getExamTime());
+                    Integer durationMinutes = schedule.getDurationMinutes();
+
+                    if (now.isBefore(startsAt)) {
+                        status = "Scheduled";
+                    } else if (durationMinutes != null
+                            && durationMinutes > 0
+                            && now.isBefore(startsAt.plusMinutes(
+                                    durationMinutes))) {
+                        status = "Within scheduled window";
+                    } else {
+                        status = "Scheduled window ended";
+                    }
+                }
+                homepageSchedules.add(new HomepageSchedule(schedule, status));
+            }
+
+            model.addAttribute("homepageSchedules", homepageSchedules);
+            return "home";
         }
 
         Object questionsObject = session.getAttribute(ACTIVE_QUESTIONS);
@@ -270,6 +301,9 @@ public class QuizController {
         model.addAttribute("durationMinutes", durationSeconds / 60L);
 
         return "quiz";
+    }
+
+    private record HomepageSchedule(ExamSchedule exam, String status) {
     }
 
     // Display dashboard and exam history.

@@ -125,10 +125,12 @@
             color: #bbf7d0;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
 </head>
 <body>
     <div class="card">
-        <h1>Quizzy</h1>
+        <div th:replace="~{fragments/quizzy-brand :: brand}"></div>
+        <h1>Student Registration</h1>
         <p>Create your student account</p>
 
         <div class="message error" th:if="${error}"
@@ -158,6 +160,12 @@
 
             <button type="submit">Create Account</button>
         </form>
+        <div class="link">
+            Already registered? <a th:href="@{/login}">Student Login</a>
+        </div>
+        <div class="link">
+            <a th:href="@{/}">Back to Home</a>
+        </div>
     </div>
     <script>
         document.querySelectorAll('[data-password-toggle]').forEach(function (toggleButton) {

@@ -145,10 +145,12 @@
             text-decoration: underline;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
 </head>
 <body>
     <div class="card">
-        <h1>Quizzy</h1>
+        <div th:replace="~{fragments/quizzy-brand :: brand}"></div>
+        <h1>Student Login</h1>
         <p>Sign in to your student account</p>
 
         <p class="error" th:if="${error}" th:text="${error}"></p>
@@ -181,6 +183,9 @@
         <div class="link">
             Don't have an account?
             <a th:href="@{/register}">Register here</a>
+        </div>
+        <div class="link">
+            <a th:href="@{/}">Back to Home</a>
         </div>
     </div>
     <script>

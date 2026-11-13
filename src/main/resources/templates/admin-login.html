@@ -104,10 +104,12 @@
             color: #fecdd3;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
 </head>
 <body>
     <main class="login-card">
-        <h1>Quizzy Admin</h1>
+        <div th:replace="~{fragments/quizzy-brand :: brand}"></div>
+        <h1>Administrator Login</h1>
         <p>Sign in to manage upcoming exams.</p>
 
         <div class="error" th:if="${error}" th:text="${error}"></div>
@@ -123,6 +125,7 @@
 
             <button type="submit">Admin Login</button>
         </form>
+        <p class="link"><a th:href="@{/}">Back to Home</a></p>
     </main>
 </body>
 </html>
